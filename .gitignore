@@ -1,0 +1,16 @@
+# Entorno virtual de Python
+venv/
+.venv/
+env/
+
+# Caché y archivos compilados de Python
+__pycache__/
+*.pyc
+
+# Configuración de entornos de desarrollo / IDEs
+.vscode/
+.idea/
+
+# Logs y archivos temporales
+*.log
+*.sqlite3
