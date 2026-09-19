@@ -1,5 +1,5 @@
 from flask import Flask, jsonify
-from db import get_db_connection
+from repositories.db import get_db_connection
 
 app = Flask(__name__)
 
