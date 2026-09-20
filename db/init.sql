@@ -38,11 +38,11 @@ CREATE TABLE IF NOT EXISTS reservas (
     hora_fin TIME NOT NULL,
     monto_total DECIMAL(10, 2) NOT NULL,
     estado ENUM('confirmada', 'cancelada', 'completada') NOT NULL DEFAULT 'confirmada',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_reservas_socio FOREIGN KEY (id_socio) REFERENCES socios(id) ON DELETE RESTRICT ON UPDATE CASCADE
 );
 -- Lo dejo comentado hasta que se creen las tablas de socios y canchas
 -- CONSTRAINT fk_reservas_cancha FOREIGN KEY (id_cancha) REFERENCES canchas(id) ON DELETE RESTRICT ON UPDATE CASCADE,
--- CONSTRAINT fk_reservas_socio FOREIGN KEY (id_socio) REFERENCES socios(id) ON DELETE RESTRICT ON UPDATE CASCADE
 
 -- Datos iniciales de prueba para reservas
 INSERT INTO reservas (id_cancha, id_socio, fecha, hora_inicio, hora_fin, monto_total, estado)
