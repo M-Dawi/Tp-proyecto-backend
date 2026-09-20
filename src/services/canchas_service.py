@@ -1,4 +1,4 @@
-from repositoris.canchas import obtener_canchas
+from repositories.canchas_repository import obtener_canchas
 
 
 

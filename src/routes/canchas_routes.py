@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from services.canchas import listar_canchas
+from services.canchas_service import listar_canchas
 
 canchas_bp = Blueprint('canchas',__name__)
 

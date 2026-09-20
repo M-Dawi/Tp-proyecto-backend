@@ -1,4 +1,4 @@
-from src.repositories.reservas_repository import obtener_reserva_por_id
+from src.repositories.reservas_repository import obtener_reserva_por_id, crear_reserva
 
 def consultar_reserva_por_id(reserva_id):
     reserva = obtener_reserva_por_id(reserva_id)
@@ -13,3 +13,17 @@ def consultar_reserva_por_id(reserva_id):
     reserva['created_at'] = str(reserva['created_at'])
     
     return reserva
+
+def registrar_reserva(datos):
+    # Verifica campos obligatorios que deben venir en la petición
+    campos_requeridos = ['id_cancha', 'id_socio', 'fecha', 'hora_inicio', 'hora_fin', 'monto_total']
+    
+    # Validar que no falte ninguno, si falta alguno devuelve error codigo 400
+    for campo in campos_requeridos:
+        if campo not in datos or datos[campo] is None or str(datos[campo]).strip() == "":
+            return {"error": f"El campo '{campo}' es obligatorio."}, 400
+
+    nuevo_id = crear_reserva(datos)
+    
+    nueva_reserva = consultar_reserva_por_id(nuevo_id)
+    return nueva_reserva, 201
