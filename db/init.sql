@@ -13,6 +13,21 @@ INSERT INTO deportes (id, nombre) VALUES
 (3, 'Pádel')
 ON DUPLICATE KEY UPDATE nombre=VALUES(nombre);
 
+-- Crear tabla de socios
+CREATE TABLE IF NOT EXISTS socios (
+   id INT AUTO_INCREMENT PRIMARY KEY,
+   nombre VARCHAR (150) NOT NULL,
+   email VARCHAR (150) NOT NULL UNIQUE,
+   activo BOOLEAN NOT NULL DEFAULT TRUE
+);
+
+-- Datos iniciales de prueba para socios
+INSERT INTO socios (nombre, email, activo)
+VALUES 
+('Juan Perez', 'juan.perez@gmail.com', TRUE),
+('Maria Gonzalez', 'maria.gonzalez@gmail.com', TRUE),
+('Carlos Rodriguez', 'carlos.rodriguez@gmail.com', TRUE);
+
 -- Crear tabla de reservas
 CREATE TABLE IF NOT EXISTS reservas (
     id INT AUTO_INCREMENT PRIMARY KEY,
