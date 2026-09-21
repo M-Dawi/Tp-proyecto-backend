@@ -1,10 +1,12 @@
 from flask import Flask, jsonify
 from db.db import get_db_connection
 from src.routes.reservas_routes import reservas_bp
+from src.routes.socios_routes import socios_bp
 
 app = Flask(__name__)
 
 app.register_blueprint(reservas_bp)
+app.register_blueprint(socios_bp)
 
 @app.route('/api/deportes', methods=['GET'])
 def obtener_deportes():
