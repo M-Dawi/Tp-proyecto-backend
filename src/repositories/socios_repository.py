@@ -4,8 +4,27 @@ def obtener_socios(limit=10, offset=0, nombre=None, activo=None):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
+    filtros = []
+    valores = []
+
+    if nombre is not None:
+        filtros.append("nombre LIKE %s")
+        valores.append(f"%{nombre}%")
+    if activo is not None:
+        filtros.append("activo = %s")
+        valores.append(activo)
+
     query = "SELECT * FROM socios"
-    cursor.execute(query)
+
+    if filtros:
+        query += " WHERE " + " AND ".join(filtros)
+
+    query += " ORDER BY id ASC LIMIT %s OFFSET %s"
+
+    valores.append(limit)
+    valores.append(offset)
+
+    cursor.execute(query, tuple(valores))
     socios = cursor.fetchall()
     cursor.close()
     conn.close()
