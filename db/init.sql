@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS reservas (
     fecha_hora_fin DATETIME(6) NOT NULL,
     precio_hora DECIMAL(10, 2) NOT NULL,
     precio_total DECIMAL(10, 2) NOT NULL,
-    estado ENUM('confirmada', 'cancelada', 'completada') NOT NULL DEFAULT 'confirmada',
+    estado ENUM('confirmada', 'cancelada', 'finalizada') NOT NULL DEFAULT 'confirmada',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_reservas_socio FOREIGN KEY (id_socio) REFERENCES socios(id) ON DELETE RESTRICT ON UPDATE CASCADE
 );
@@ -50,7 +50,6 @@ CREATE TABLE IF NOT EXISTS reservas (
 -- CONSTRAINT fk_reservas_cancha FOREIGN KEY (id_cancha) REFERENCES canchas(id) ON DELETE RESTRICT ON UPDATE CASCADE,
 
 -- Datos iniciales de prueba para reservas
-INSERT INTO reservas (id_cancha, id_socio, fecha, hora_inicio, hora_fin, monto_total, estado)
-VALUES 
-(1, 1, '2026-10-20 18:00:00.000000', '2026-10-20 19:00:00.000000', 15000.00, 15000.00, 'confirmada');
+INSERT INTO reservas (id_cancha, id_socio, fecha_hora_inicio, fecha_hora_fin, precio_hora, precio_total, estado)
+VALUES (1, 1, '2026-10-20 18:00:00.000000', '2026-10-20 19:00:00.000000', 15000.00, 15000.00, 'confirmada');
 -- (1, 1, '2026-09-20', '18:00:00', '19:00:00', 15000.00, 'confirmada');

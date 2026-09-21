@@ -40,3 +40,19 @@ def crear_reserva(datos):
     cursor.close()
     conexion.close()
     return nuevo_id
+
+def actualizar_estado(id_reserva, nuevo_estado):
+    conexion = None
+    try:
+        conexion = get_db_connection()
+        cursor = conexion.cursor()
+        cursor.execute("UPDATE reservas SET estado = %s WHERE id = %s", (nuevo_estado, id_reserva))
+        conexion.commit()
+        cursor.close()
+        return True
+    except Exception as e:
+        print(f"Error de conexión al actualizar estado: {e}")
+        return False
+    finally:
+        if conexion:
+            conexion.close()
