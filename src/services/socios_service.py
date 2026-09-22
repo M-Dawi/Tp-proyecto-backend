@@ -1,6 +1,6 @@
 from src.repositories.socios_repository import (
     obtener_socios, obtener_socio_por_id, 
-    obtener_socio_por_email, crear_socio, actualizar_socio
+    obtener_socio_por_email, crear_socio, actualizar_socio, contar_socios
 )
 
 from src.validators.socios_validator import validar_datos_crear_socio, validar_datos_actualizar_socio
@@ -117,11 +117,11 @@ def actualizar_socio_service(socio_id, cuerpo):
 
 def obtener_socios_service(limit, offset, nombre, activo):
 
-    if limit is None or offset is None:
+    if limit is None or offset is None:   #si manda un algo que no se puede convertir en entero, devuelve None
         return armar_error(
             "BAD_REQUEST",
             "Solicitud inválida",
-            "Los parámetros '_limit' y '_offset' son obligatorios",
+            "Los parámetros '_limit' y '_offset' deben ser numeros enteros",
             400
         )
 
@@ -153,12 +153,41 @@ def obtener_socios_service(limit, offset, nombre, activo):
     
 
     try:
-        socios = obtener_socios(limit, offset, nombre, activo)  # Función desde repository
 
+        socios = obtener_socios(limit, offset, nombre, activo)  # Función desde repository
         if not socios:                            #si no encuntra socios, devuelve un error 204
             return "", 204
+                
+        total = contar_socios(nombre, activo)  # Función desde repository
+        
 
-        return socios, 200                        #si encuentra socios, devuelve la lista de socios y un código 200
+        prev_offset = max(0, offset - limit)
+        next_offset = offset + limit 
+        last_offset = ((total - 1) // limit) * limit 
+
+        respuesta = {
+            "socios": socios,
+            "_links": {
+                "_first": {
+                    "href": f"http://localhost:5000/socios?_offset=0&_limit={limit}",
+                },
+                "_prev": {
+                    "href": f"http://localhost:5000/socios?_offset={prev_offset}&_limit={limit}",
+                
+                },
+                "_next": {
+                    "href": f"http://localhost:5000/socios?_offset={next_offset}&_limit={limit}",
+                },
+                "_last": {
+                    "href": f"http://localhost:5000/socios?_offset={last_offset}&_limit={limit}",
+                }
+
+            }
+        }
+
+
+       
+        return respuesta, 200                        #si encuentra socios, devuelve la lista de socios y un código 200
     
     except Exception as e:
         print("Error:", e)

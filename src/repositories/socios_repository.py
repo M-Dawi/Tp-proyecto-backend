@@ -90,3 +90,30 @@ def actualizar_socio(socio_id, datos):
     conn.commit()
     cursor.close()
     conn.close()
+
+def contar_socios(nombre=None, activo=None):    #cuenta la cantidad de socios en la base de datos, con filtros opcionales por nombre y activo
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    filtros = []
+    valores = []
+    
+    if nombre is not None:
+            filtros.append("nombre LIKE %s")
+            valores.append(f"%{nombre}%")
+    if activo is not None:
+            filtros.append("activo = %s")
+            valores.append(activo)
+    
+
+    query = "SELECT COUNT(*) FROM socios"
+
+    if filtros:
+        query += " WHERE " + " AND ".join(filtros)
+
+    cursor.execute(query, tuple(valores))
+    total_socios = cursor.fetchone()[0]
+
+    cursor.close()
+    conn.close()
+    return total_socios
