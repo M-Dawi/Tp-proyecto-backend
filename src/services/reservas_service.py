@@ -1,5 +1,6 @@
 from datetime import datetime
 from src.repositories.reservas_repository import obtener_reserva_por_id, crear_reserva, actualizar_estado
+from src.validators.reservas_validators import validar_campos_creacion, validar_estado
 
 def consultar_reserva_por_id(reserva_id):
     reserva = obtener_reserva_por_id(reserva_id)
@@ -8,23 +9,19 @@ def consultar_reserva_por_id(reserva_id):
 
     reserva['fecha_hora_inicio'] = reserva['fecha_hora_inicio'].strftime("%Y-%m-%dT%H:%M:%S.%f") + "-03:00"
     reserva['fecha_hora_fin'] = reserva['fecha_hora_fin'].strftime("%Y-%m-%dT%H:%M:%S.%f") + "-03:00"
-    reserva['precio_hora'] = float(reserva['precio_hora'])
-    reserva['precio_total'] = float(reserva['precio_total'])
+    reserva['precio_hora'] = int(reserva['precio_hora'])
+    reserva['precio_total'] = int(reserva['precio_total'])
     reserva['created_at'] = str(reserva['created_at'])
 
     return reserva
 
 def registrar_reserva(datos):
-    # Verifica campos obligatorios que deben venir en la petición
-    campos_requeridos = ['id_cancha', 'id_socio', 'fecha', 'hora_inicio', 'hora_fin', 'monto_total']
-    
-    # Validar que no falte ninguno, si falta alguno devuelve error codigo 400
-    for campo in campos_requeridos:
-        if campo not in datos or datos[campo] is None or str(datos[campo]).strip() == "":
-            return {"error": f"El campo '{campo}' es obligatorio."}, 400
+    error_campos = validar_campos_creacion(datos)
+    if error_campos is not None:
+        return {"error": error_campos}, 400
 
     nuevo_id = crear_reserva(datos)
-    
+
     nueva_reserva = consultar_reserva_por_id(nuevo_id)
     return nueva_reserva, 201
 
@@ -35,14 +32,14 @@ TRANSICIONES_PERMITIDAS = {
     },
 }
 def cambiar_estado(reserva_id, nuevo_estado):
-    if nuevo_estado not in ("confirmada", "cancelada", "finalizada"):
-        return {"error": "Estado desconocido"}, 400
+    error_estado = validar_estado(nuevo_estado)
+    if error_estado is not None:
+        return {"error": error_estado}, 400
 
     reserva = obtener_reserva_por_id(reserva_id)
     if reserva is None:
         return {"error": "La reserva no existe"}, 404
 
-    # Repetir el estado actual = éxito, sin tocar nada
     if nuevo_estado == reserva["estado"]:
         return None, 204
 
