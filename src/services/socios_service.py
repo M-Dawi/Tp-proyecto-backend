@@ -114,3 +114,80 @@ def actualizar_socio_service(socio_id, cuerpo):
             "Ocurrió un error inesperado",
             500
         )
+
+def obtener_socios_service(limit, offset, nombre, activo):
+
+    if limit is None or offset is None:
+        return armar_error(
+            "BAD_REQUEST",
+            "Solicitud inválida",
+            "Los parámetros '_limit' y '_offset' son obligatorios",
+            400
+        )
+
+    if limit < 1 or limit > 100:               #si el límite es menor a 1 o mayor a 100, devuelve un error 400, va a fuera por que es una validación de negocio, no de base de datos
+        return armar_error(
+            "BAD_REQUEST",
+            "Solicitud inválida",
+            "El límite debe estar entre 1 y 100",
+            400
+        )
+
+    if offset < 0:                             #si el offset es menor a 0, devuelve un error 400, va a fuera por que es una validación de negocio, no de base de datos
+        return armar_error(
+            "BAD_REQUEST",
+            "Solicitud inválida",
+            "El offset no puede ser negativo",
+            400
+        )
+
+    if activo is not None:
+        if activo.lower() not in ["true", "false"]:          #si el parámetro activo no es true o false, devuelve un error 400
+            return armar_error(
+                "BAD_REQUEST",
+                "Solicitud inválida",
+                "El parámetro 'activo' debe ser 'true' o 'false'",
+                400
+            )
+        activo = activo.lower() == "true"  # Convertir a booleano
+    
+
+    try:
+        socios = obtener_socios(limit, offset, nombre, activo)  # Función desde repository
+
+        if not socios:                            #si no encuntra socios, devuelve un error 204
+            return "", 204
+
+        return socios, 200                        #si encuentra socios, devuelve la lista de socios y un código 200
+    
+    except Exception as e:
+        print("Error:", e)
+        return armar_error(
+            "INTERNAL_SERVER_ERROR",
+            "Error interno del servidor",
+            "Ocurrió un error inesperado",
+            500
+        )
+
+
+def obtener_socio_por_id_service(socio_id):
+    try:
+        socio = obtener_socio_por_id(socio_id)  # Función desde repository
+        if socio is None:                       #si no se encuentra el socio, devuelve un error 404
+            return armar_error(            
+                        "NOT_FOUND", 
+                        "Recurso no encontrado",    
+                        "No se encuentra socio en nuestra base de datos", 
+                        404
+                        )
+        return socio, 200                       #si se encuentra el socio, devuelve el socio y un código 200
+    except Exception as e:                      #si ocurre un error inesperado(conexion), devuelve un error 500
+        print("Error:", e)
+        return armar_error(
+            "INTERNAL_SERVER_ERROR", 
+            "Error interno del servidor", 
+            "Ocurrió un error inesperado",
+            500
+        )
+  
+
