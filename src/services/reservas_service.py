@@ -1,6 +1,10 @@
 from datetime import datetime
 from src.repositories.reservas_repository import obtener_reserva_por_id, crear_reserva, actualizar_estado
 from src.validators.reservas_validators import validar_campos_creacion, validar_estado
+from src.validators.fechas import parsear_fecha_hora, validar_intervalo_reserva
+from src.repositories.canchas_repository import obtener_cancha_por_id
+from src.repositories.socios_repository import obtener_socio_por_id
+
 
 def consultar_reserva_por_id(reserva_id):
     reserva = obtener_reserva_por_id(reserva_id)
@@ -18,10 +22,33 @@ def consultar_reserva_por_id(reserva_id):
 def registrar_reserva(datos):
     error_campos = validar_campos_creacion(datos)
     if error_campos is not None:
-        return {"error": error_campos}, 400
+        return {"error": error_campos}, 400 
+    inicio = parsear_fecha_hora(datos['fecha_hora_inicio'])
+    fin = parsear_fecha_hora(datos['fecha_hora_fin'])
+    if  inicio is None or fin is None: 
+        return {"error": "La fecha tiene formato invalido"}, 400
+    intervalo = validar_intervalo_reserva(inicio,fin)
+    if intervalo is not None:
+        return {"error": intervalo}, 400
+    cancha = obtener_cancha_por_id(datos['id_cancha'])
+    if cancha is None: 
+        return {"error": "La cancha no existe"}, 404
+    if not cancha['activa']:
+        return {"error": "La cancha no esta activa"}, 400
+    socio = obtener_socio_por_id(datos['id_socio'])
+    if socio is None:
+        return {"error": "El socio no existe"}, 404
+    if not socio['activo']: 
+        return {"error": "El socio no esta activo"}, 400
 
+
+
+
+
+
+
+     
     nuevo_id = crear_reserva(datos)
-
     nueva_reserva = consultar_reserva_por_id(nuevo_id)
     return nueva_reserva, 201
 
