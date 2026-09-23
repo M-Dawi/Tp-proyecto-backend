@@ -1,4 +1,4 @@
-from db.db import get_db_connection
+from db.db import get_db_connection # pyright: ignore[reportMissingImports]
 
 def obtener_canchas(
         id_deporte=None,
@@ -41,4 +41,25 @@ def obtener_canchas(
     conn.close()
 
     return canchas
-    
+
+
+def crear_cancha(id_deporte, nombre, techada, activa):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    query = """
+        INSERT INTO canchas (id_deporte, nombre, techada, activa)
+        VALUES (%s, %s, %s, %s)
+    """
+    cursor.execute(query, (id_deporte, nombre, techada, activa))
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    return {
+        "id_deporte": id_deporte,
+        "nombre": nombre,
+        "techada": techada,
+        "activa": activa
+    }
