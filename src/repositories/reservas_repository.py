@@ -64,3 +64,85 @@ def actualizar_estado(id_reserva, nuevo_estado):
     finally:
         if conexion:
             conexion.close()
+    
+ #LISTAS RESERVAS : funciones  que se comunicaran con la BD----
+
+def listar_reservas(id_cancha=None, id_socio=None, estado=None, fecha_desde=None, fecha_hasta=None, limit=10, offset=0):
+   
+    conexion = get_db_connection()
+    cursor = conexion.cursor(dictionary=True)
+    
+    query_base = "SELECT id, id_socio, id_cancha, fecha_hora_inicio, fecha_hora_fin, estado, precio_hora, precio_total, created_at FROM reservas"
+    condiciones = []
+    valores = []
+
+    if id_cancha is not None:
+        condiciones.append("id_cancha = %s")
+        valores.append(id_cancha)
+        
+    if id_socio is not None:
+        condiciones.append("id_socio = %s")
+        valores.append(id_socio)
+        
+    if estado is not None:
+        condiciones.append("estado = %s")
+        valores.append(estado)
+        
+    if fecha_desde is not None:
+        condiciones.append("DATE(fecha_hora_inicio) >= %s")
+        valores.append(fecha_desde)
+        
+    if fecha_hasta is not None:
+        condiciones.append("DATE(fecha_hora_inicio) <= %s")
+        valores.append(fecha_hasta)
+
+    if condiciones:
+        query_base += " WHERE " + " AND ".join(condiciones)
+
+    query_base += " ORDER BY id ASC LIMIT %s OFFSET %s"
+    valores.extend([limit, offset])
+
+    cursor.execute(query_base, valores)
+    reservas = cursor.fetchall()
+    cursor.close()
+    conexion.close()
+    return reservas
+
+
+def contar_reservas(id_cancha=None, id_socio=None, estado=None, fecha_desde=None, fecha_hasta=None):
+   
+    conexion = get_db_connection()
+    cursor = conexion.cursor(dictionary=True)
+    
+    query_base = "SELECT COUNT(*) as total FROM reservas"
+    condiciones = []
+    valores = []
+
+    if id_cancha is not None:
+        condiciones.append("id_cancha = %s")
+        valores.append(id_cancha)
+        
+    if id_socio is not None:
+        condiciones.append("id_socio = %s")
+        valores.append(id_socio)
+        
+    if estado is not None:
+        condiciones.append("estado = %s")
+        valores.append(estado)
+        
+    if fecha_desde is not None:
+        condiciones.append("DATE(fecha_hora_inicio) >= %s")
+        valores.append(fecha_desde)
+        
+    if fecha_hasta is not None:
+        condiciones.append("DATE(fecha_hora_inicio) <= %s")
+        valores.append(fecha_hasta)
+
+    if condiciones:
+        query_base += " WHERE " + " AND ".join(condiciones)
+
+    cursor.execute(query_base, valores)
+    resultado = cursor.fetchone()
+    cursor.close()
+    conexion.close()
+    return resultado['total'] if resultado else 0
