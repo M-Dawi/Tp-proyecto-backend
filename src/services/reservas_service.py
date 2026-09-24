@@ -18,36 +18,40 @@ def consultar_reserva_por_id(reserva_id):
 
     return reserva
 
-def registrar_reserva(datos):
+def validar_datos_reserva(datos):
     error_campos = validar_campos_creacion(datos)
     if error_campos is not None:
-        return {"error": error_campos}, 400 
+        return ({"error": error_campos}, 400), None 
     inicio = parsear_fecha_hora(datos['fecha_hora_inicio'])
     fin = parsear_fecha_hora(datos['fecha_hora_fin'])
     if  inicio is None or fin is None: 
-        return {"error": "La fecha tiene formato invalido"}, 400
-    intervalo = validar_intervalo_reserva(inicio,fin)
+        return ({"error": "La fecha tiene formato invalido"}, 400), None
+    intervalo = validar_intervalo_reserva(inicio, fin)
     if intervalo is not None:
-        return {"error": intervalo}, 400
+        return ({"error": intervalo}, 400), None
     cancha = obtener_cancha_por_id(datos['id_cancha'])
     if cancha is None: 
-        return {"error": "La cancha no existe"}, 404
+        return ({"error": "La cancha no existe"}, 404), None
     if not cancha['activa']:
-        return {"error": "La cancha no esta activa"}, 400
+        return ({"error": "La cancha no esta activa"}, 400), None
     socio = obtener_socio_por_id(datos['id_socio'])
     if socio is None:
-        return {"error": "El socio no existe"}, 404
+        return ({"error": "El socio no existe"}, 404), None
     if not socio['activo']: 
-        return {"error": "El socio no esta activo"}, 400
+        return ({"error": "El socio no esta activo"}, 400), None
+    return None, {"inicio": inicio, "fin": fin, "cancha": cancha}
 
 
-
-
-
-
-
-     
-    nuevo_id = crear_reserva(datos)
+def registrar_reserva(datos):
+    error, datos_validados = validar_datos_reserva(datos)
+    if error is not None:
+        return error
+    inicio = datos_validados['inicio']
+    fin = datos_validados['fin']
+    precio_hora = datos_validados['cancha']['precio_hora']
+    horas = ((fin - inicio).total_seconds())/3600
+    precio_total = int(precio_hora * horas)  
+    nuevo_id = crear_reserva(datos, precio_hora, precio_total)
     nueva_reserva = consultar_reserva_por_id(nuevo_id)
     return nueva_reserva, 201
 
