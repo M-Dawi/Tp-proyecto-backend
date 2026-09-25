@@ -29,4 +29,8 @@ def post_socios():
 def patch_socios(socio_id):
     cuerpo = request.get_json(silent=True)
     respuesta, codigo = actualizar_socio_service(socio_id, cuerpo)
+
+    if codigo == 204:
+        return None, 204
+
     return jsonify(respuesta), codigo
