@@ -20,6 +20,38 @@ def obtener_reserva_por_id(reserva_id):
             conexion.close()
         return None
 
+def buscar_solapamientos(columna, id_col, inicio,fin):
+    if columna not in ('id_cancha', 'id_socio'):
+        return None
+    conexion = None
+    try:
+        # Devuelve una reserva de la cancha que se solape con el horario, o None si no hay
+        conexion = get_db_connection()
+        cursor = conexion.cursor(dictionary=True)
+        query = f"""
+        SELECT * FROM reservas  
+        WHERE {columna} = %s
+            AND estado = 'confirmada'
+            AND fecha_hora_inicio < %s
+            AND fecha_hora_fin > %s
+        """
+        cursor.execute(query, (id_col, fin, inicio))
+        solapamiento = cursor.fetchone()
+        cursor.close()
+        conexion.close()
+        return solapamiento
+    except Exception as e:
+        print(f"error: {e}")
+        if conexion is not None:
+            conexion.close()
+        return None    
+
+
+
+
+
+
+
 def crear_reserva(datos, precio_hora, precio_total):
     # Crea una reserva en la base de datos
     conexion = get_db_connection()

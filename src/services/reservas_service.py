@@ -1,5 +1,5 @@
 from datetime import datetime
-from src.repositories.reservas_repository import obtener_reserva_por_id, crear_reserva, actualizar_estado, listar_reservas, contar_reservas
+from src.repositories.reservas_repository import obtener_reserva_por_id, crear_reserva, actualizar_estado, listar_reservas, contar_reservas, buscar_solapamientos
 from src.validators.reservas_validators import validar_campos_creacion, validar_estado
 from src.validators.fechas import parsear_fecha_hora, validar_intervalo_reserva, formatear_fecha_hora
 from src.repositories.canchas_repository import obtener_cancha_por_id
@@ -22,6 +22,8 @@ def validar_datos_reserva(datos):
     error_campos = validar_campos_creacion(datos)
     if error_campos is not None:
         return ({"error": error_campos}, 400), None 
+    id_cancha = datos['id_cancha']
+    id_socio = datos['id_socio']
     inicio = parsear_fecha_hora(datos['fecha_hora_inicio'])
     fin = parsear_fecha_hora(datos['fecha_hora_fin'])
     if  inicio is None or fin is None: 
@@ -29,17 +31,33 @@ def validar_datos_reserva(datos):
     intervalo = validar_intervalo_reserva(inicio, fin)
     if intervalo is not None:
         return ({"error": intervalo}, 400), None
-    cancha = obtener_cancha_por_id(datos['id_cancha'])
+    cancha = obtener_cancha_por_id(id_cancha)
     if cancha is None: 
         return ({"error": "La cancha no existe"}, 404), None
     if not cancha['activa']:
-        return ({"error": "La cancha no esta activa"}, 400), None
-    socio = obtener_socio_por_id(datos['id_socio'])
+        return ({"error": "La cancha no esta activa"}, 409), None
+    socio = obtener_socio_por_id(id_socio)
     if socio is None:
         return ({"error": "El socio no existe"}, 404), None
     if not socio['activo']: 
-        return ({"error": "El socio no esta activo"}, 400), None
+        return ({"error": "El socio no esta activo"}, 409), None
+    solapamiento = buscar_solapamientos("id_cancha", id_cancha, inicio, fin)
+    if solapamiento is not None:
+        return ({"error": "Se superpone el horario"}, 409), None
+
     return None, {"inicio": inicio, "fin": fin, "cancha": cancha}
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 def registrar_reserva(datos):
