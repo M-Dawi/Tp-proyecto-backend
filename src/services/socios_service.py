@@ -102,7 +102,7 @@ def actualizar_socio_service(socio_id, cuerpo):
         socio_actualizado = obtener_socio_por_id(socio_id)
         socio_actualizado["activo"] = bool(socio_actualizado["activo"])
 
-        return socio_actualizado, 200
+        return socio_actualizado, 204
 
     except Exception as e:
 
