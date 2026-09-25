@@ -17,6 +17,20 @@ def armar_error(code, message, description, status_code):
         ]
     }, status_code
 
+LIMIT_DEFAULT = 10
+LIMIT_MAX = 100
+OFFSET_DEFAULT = 0
+
+def leer_paginacion(args):
+    try:
+        limit = int(args.get("_limit", LIMIT_DEFAULT))
+        offset = int(args.get("_offset", OFFSET_DEFAULT))
+    except (TypeError, ValueError):
+        return None
+    if not (1 <= limit <= LIMIT_MAX) or offset < 0:
+        return None
+    return limit, offset
+
 def crear_socio_service(cuerpo):
 
     error_validacion = validar_datos_crear_socio(cuerpo)  # Función desde validators
@@ -113,30 +127,6 @@ def actualizar_socio_service(socio_id, cuerpo):
         )
 
 def obtener_socios_service(limit, offset, nombre, activo):
-
-    if limit is None or offset is None:   #si manda un algo que no se puede convertir en entero, devuelve None
-        return armar_error(
-            "BAD_REQUEST",
-            "Solicitud inválida",
-            "Los parámetros '_limit' y '_offset' deben ser numeros enteros",
-            400
-        )
-
-    if limit < 1 or limit > 100:               #si el límite es menor a 1 o mayor a 100, devuelve un error 400, va a fuera por que es una validación de negocio, no de base de datos
-        return armar_error(
-            "BAD_REQUEST",
-            "Solicitud inválida",
-            "El límite debe estar entre 1 y 100",
-            400
-        )
-
-    if offset < 0:                             #si el offset es menor a 0, devuelve un error 400, va a fuera por que es una validación de negocio, no de base de datos
-        return armar_error(
-            "BAD_REQUEST",
-            "Solicitud inválida",
-            "El offset no puede ser negativo",
-            400
-        )
 
     if activo is not None:
         if activo.lower() not in ["true", "false"]:          #si el parámetro activo no es true o false, devuelve un error 400
