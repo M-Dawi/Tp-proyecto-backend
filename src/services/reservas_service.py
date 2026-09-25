@@ -26,8 +26,8 @@ def validar_datos_reserva(datos):
     id_socio = datos['id_socio']
     inicio = parsear_fecha_hora(datos['fecha_hora_inicio'])
     fin = parsear_fecha_hora(datos['fecha_hora_fin'])
-    if  inicio is None or fin is None: 
-        return ({"error": "La fecha tiene formato invalido"}, 400), None
+    if inicio is None or fin is None: 
+        return ({"error": "La fecha tiene formato invalido"}, 400)
     intervalo = validar_intervalo_reserva(inicio, fin)
     if intervalo is not None:
         return ({"error": intervalo}, 400), None
@@ -41,23 +41,11 @@ def validar_datos_reserva(datos):
         return ({"error": "El socio no existe"}, 404), None
     if not socio['activo']: 
         return ({"error": "El socio no esta activo"}, 409), None
-    solapamiento = buscar_solapamientos("id_cancha", id_cancha, inicio, fin)
-    if solapamiento is not None:
+    solapamiento_cancha = buscar_solapamientos("id_cancha", id_cancha, inicio, fin)
+    solapamiento_socio = buscar_solapamientos("id_socio", id_socio, inicio, fin)
+    if solapamiento_cancha is not None or solapamiento_socio is not None:
         return ({"error": "Se superpone el horario"}, 409), None
-
     return None, {"inicio": inicio, "fin": fin, "cancha": cancha}
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 def registrar_reserva(datos):
