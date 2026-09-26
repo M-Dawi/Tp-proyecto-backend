@@ -1,4 +1,4 @@
-from src.repositories.canchas_repository import obtener_canchas, crear_cancha as crear_canchas_repo
+from src.repositories.canchas_repository import (obtener_canchas, crear_cancha as crear_canchas_repo, eliminar_cancha as eliminar_cancha_repo)
 from src.repositories.canchas_repository import (
     obtener_cancha_por_id,
     actualizar_cancha as repo_actualizar_cancha,
@@ -69,3 +69,14 @@ def actualizar_cancha(cancha_id, datos):
         limpio["nombre"] = limpio["nombre"].strip()
 
     return repo_actualizar_cancha(cancha_id, limpio), 200
+
+def elimar_cancha(cancha_id):
+    cancha = obtenerr_cancha_por_id(cancha_id)
+    if cancha is None:
+        return {"error": "Cancha no encontrada"}, 404
+    
+    eliminada = eliminar_cancha_repo(cancha_id)
+    if not eliminada:
+        return {"error": "No se pudo eliminar la cancha","cancha con reserva"}, 500
+    
+    return {"Cancha eliminada exitosamente"}, 200
