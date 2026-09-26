@@ -1,5 +1,9 @@
 from src.repositories.canchas_repository import obtener_canchas, crear_cancha as crear_canchas_repo
-
+from src.repositories.canchas_repository import (
+    obtener_cancha_por_id,
+    actualizar_cancha as repo_actualizar_cancha,
+)
+from src.validators import canchas_validators
 
 
 def listar_canchas(limit, offset):
@@ -56,7 +60,7 @@ def actualizar_cancha(cancha_id, datos):
     if cancha is None:
         return {"error": "Cancha no encontrada"}, 404
 
-    error = cancha_validator.validar_campos_actualizacion(datos)
+    error = canchas_validators.validar_campos_actualizacion(datos)
     if error:
         return {"error": error}, 400
 
