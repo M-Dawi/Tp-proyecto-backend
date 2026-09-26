@@ -41,3 +41,27 @@ def crear_canchas(datos):
 
     return cancha, 201
     
+
+def obtener_cancha(cancha_id):
+    cancha = obtener_cancha_por_id(cancha_id)
+
+    if cancha is None:
+        return {"error": "Cancha no encontrada"}, 404
+
+    return cancha, 200
+
+
+def actualizar_cancha(cancha_id, datos):
+    cancha = obtener_cancha_por_id(cancha_id)
+    if cancha is None:
+        return {"error": "Cancha no encontrada"}, 404
+
+    error = cancha_validator.validar_campos_actualizacion(datos)
+    if error:
+        return {"error": error}, 400
+
+    limpio = dict(datos)
+    if "nombre" in limpio:
+        limpio["nombre"] = limpio["nombre"].strip()
+
+    return repo_actualizar_cancha(cancha_id, limpio), 200
