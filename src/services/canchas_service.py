@@ -1,5 +1,9 @@
-from src.repositories.canchas_repository import obtener_canchas, crear_canchas
-
+from src.repositories.canchas_repository import (obtener_canchas, crear_cancha as crear_canchas_repo, eliminar_cancha as eliminar_cancha_repo)
+from src.repositories.canchas_repository import (
+    obtener_cancha_por_id,
+    actualizar_cancha as repo_actualizar_cancha,
+)
+from src.validators import canchas_validators
 
 
 def listar_canchas(limit, offset):
@@ -11,10 +15,8 @@ def listar_canchas(limit, offset):
         return {"error": "El offset no puede ser negativo"}, 400
 
 
-    canchas = obtener_canchas(limit, offset)
-        limit=limit,
-        offset=offset
-
+    canchas = obtener_canchas(limit=limit, offset=offset)
+    
     return{
         "canchas": canchas,
         "limit": limit,
@@ -39,7 +41,42 @@ def crear_canchas(datos):
     if precio_hora <= 0:
         return {"error": "El 'precio_hora' debe ser un entero mayor a cero"}, 400
 
-    cancha = crear_canchas(nombre, id_deporte, precio_hora, techada, activa)
+    cancha = crear_canchas_repo(nombre, id_deporte, precio_hora, techada, activa)
 
     return cancha, 201
     
+
+def obtener_cancha(cancha_id):
+    cancha = obtener_cancha_por_id(cancha_id)
+
+    if cancha is None:
+        return {"error": "Cancha no encontrada"}, 404
+
+    return cancha, 200
+
+
+def actualizar_cancha(cancha_id, datos):
+    cancha = obtener_cancha_por_id(cancha_id)
+    if cancha is None:
+        return {"error": "Cancha no encontrada"}, 404
+
+    error = canchas_validators.validar_campos_actualizacion(datos)
+    if error:
+        return {"error": error}, 400
+
+    limpio = dict(datos)
+    if "nombre" in limpio:
+        limpio["nombre"] = limpio["nombre"].strip()
+
+    return repo_actualizar_cancha(cancha_id, limpio), 200
+
+def elimar_cancha(cancha_id):
+    cancha = obtenerr_cancha_por_id(cancha_id)
+    if cancha is None:
+        return {"error": "Cancha no encontrada"}, 404
+    
+    eliminada = eliminar_cancha_repo(cancha_id)
+    if not eliminada:
+        return {"error": "No se pudo eliminar la cancha","cancha con reserva"}, 500
+    
+    return {"Cancha eliminada exitosamente"}, 200

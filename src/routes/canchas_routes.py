@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify  # type: ignore[reportMissingImports]
-from src.services.canchas_service import listar_canchas, crear_canchas # type: ignore
+from src.services.canchas_service import listar_canchas, crear_canchas, obtener_cancha, actualizar_cancha # type: ignore
 
 canchas_bp = Blueprint('canchas',__name__)
 
@@ -26,3 +26,24 @@ def post_canchas():
 
     return jsonify(resultado), codigo
 
+
+
+@canchas_bp.route('/canchas/<int:cancha_id>', methods=['GET'])
+def get_cancha(cancha_id):
+    resultado, codigo = obtener_cancha(cancha_id)
+    return jsonify(resultado), codigo
+
+
+@canchas_bp.route('/canchas/<int:cancha_id>', methods=['PATCH'])
+def patch_cancha(cancha_id):
+    datos = request.get_json(silent=True)
+
+    if datos is None:
+        return jsonify({'error': 'No se proporcionaron datos'}), 400
+
+    resultado, codigo = actualizar_cancha(cancha_id, datos)
+    return jsonify(resultado), codigo
+@canchas_bp.route('/canchas/<int:cancha_id>', methods=['DELETE'])
+def delete_cancha(cancha_id):
+    resultado, codigo = eliminar_cancha(cancha_id)
+    return jsonify(resultado), codigo

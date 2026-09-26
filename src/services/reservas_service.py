@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from src.repositories.reservas_repository import obtener_reserva_por_id, crear_reserva, actualizar_estado, listar_reservas, contar_reservas, buscar_solapamientos
 from src.validators.reservas_validators import validar_campos_creacion, validar_estado
 from src.validators.fechas import parsear_fecha_hora, validar_intervalo_reserva, formatear_fecha_hora
@@ -67,6 +67,9 @@ TRANSICIONES_PERMITIDAS = {
         "finalizada": lambda ahora, inicio, fin: ahora >= fin,
     },
 }
+
+zona_horaria = timezone(timedelta(hours=-3))
+
 def cambiar_estado(reserva_id, nuevo_estado):
     error_estado = validar_estado(nuevo_estado)
     if error_estado is not None:
@@ -87,7 +90,7 @@ def cambiar_estado(reserva_id, nuevo_estado):
     if condicion is None:
         return {"error": f"No se puede pasar de '{reserva['estado']}' a '{nuevo_estado}'"}, 409
 
-    ahora = datetime.now()
+    ahora = datetime.now(zona_horaria)
     if not condicion(ahora, reserva["fecha_hora_inicio"], reserva["fecha_hora_fin"]):
         return {"error": f"No se puede pasar a '{nuevo_estado}' en este momento"}, 409
 
@@ -108,16 +111,16 @@ def armar_url_hateoas(base_url, limit, offset, filtros):
     params.append(f"_offset={offset}")
     
     query_string = "&".join(params)
-    return f"{base_url}?{query_string}"
+    return { "href": f"{base_url}?{query_string}"}
 
 def listar_reservas_service(id_cancha, id_socio, estado, fecha_desde, fecha_hasta, limit, offset, base_url):
     # obtener la lista y el conteo de BD
     reservas_db = listar_reservas(id_cancha, id_socio, estado, fecha_desde, fecha_hasta, limit, offset)
     total_registros = contar_reservas(id_cancha, id_socio, estado, fecha_desde, fecha_hasta)
 
-    items = []
+    reservas = []
     for r in reservas_db:
-        items.append({
+        reservas.append({
             "id": int(r["id"]),
             "id_socio": int(r["id_socio"]),
             "id_cancha": int(r["id_cancha"]),
@@ -138,22 +141,22 @@ def listar_reservas_service(id_cancha, id_socio, estado, fecha_desde, fecha_hast
         "fecha_hasta": fecha_hasta
     }
 
-    links = {
-        "first": armar_url_hateoas(base_url, limit, 0, filtros),
-        "last": armar_url_hateoas(base_url, limit, max(0, ((total_registros - 1) // limit) * limit), filtros)
+    _links = {
+        "_first": armar_url_hateoas(base_url, limit, 0, filtros),
+        "_last": armar_url_hateoas(base_url, limit, max(0, ((total_registros - 1) // limit) * limit), filtros)
     }
 
     if offset > 0:
         prev_offset = max(0, offset - limit)
-        links["prev"] = armar_url_hateoas(base_url, limit, prev_offset, filtros)
+        _links["_prev"] = armar_url_hateoas(base_url, limit, prev_offset, filtros)
 
     if offset + limit < total_registros:
         next_offset = offset + limit
-        links["next"] = armar_url_hateoas(base_url, limit, next_offset, filtros)
+        _links["_next"] = armar_url_hateoas(base_url, limit, next_offset, filtros)
 
     respuesta = {
-        "items": items,
-        "_links": links
+        "reservas": reservas,
+        "_links": _links
     }
 
     return respuesta, 200

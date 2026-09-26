@@ -10,7 +10,7 @@ def obtener_canchas(
 ):
     
     conn = get_db_connection()
-    cursor = conn.cursor()
+    cursor = conn.cursor(dictionary=True)
 
     query = "SELECT * FROM canchas WHERE 1=1"
     params = []
@@ -85,3 +85,41 @@ def crear_cancha(id_deporte, nombre, techada, activa):
         "techada": techada,
         "activa": activa
     }
+
+
+def actualizar_cancha(cancha_id, campos):
+    if not campos:
+        return obtener_cancha_por_id(cancha_id)
+
+    permitidos = {"nombre", "precio_hora", "techada", "activa"}
+    campos = {k: v for k, v in campos.items() if k in permitidos}
+
+    if not campos:
+        return obtener_cancha_por_id(cancha_id)
+
+    sets = ", ".join(f"{col} = %s" for col in campos.keys())
+    valores = list(campos.values()) + [cancha_id]
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    query = f"UPDATE canchas SET {sets} WHERE id = %s"
+    cursor.execute(query, tuple(valores))
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    return obtener_cancha_por_id(cancha_id)
+def eliminar_cancha(cancha_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    query = "DELETE FROM canchas WHERE id = %s"
+    cursor.execute(query, (cancha_id,))
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    return {'Cancha con id eliminada': cancha_id}
