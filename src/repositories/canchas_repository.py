@@ -20,7 +20,7 @@ def obtener_canchas(
         params.append(id_deporte)
 
     if nombre is not None:
-        query += " AND nombre ILIKE %s"
+        query += " AND nombre LIKE %s"
         params.append(f"%{nombre}%")
 
     if techada is not None:
