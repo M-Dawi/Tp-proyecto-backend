@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from src.repositories.reservas_repository import obtener_reserva_por_id, crear_reserva, actualizar_estado, listar_reservas, contar_reservas, buscar_solapamientos
 from src.validators.reservas_validators import validar_campos_creacion, validar_estado
 from src.validators.fechas import parsear_fecha_hora, validar_intervalo_reserva, formatear_fecha_hora
@@ -67,6 +67,9 @@ TRANSICIONES_PERMITIDAS = {
         "finalizada": lambda ahora, inicio, fin: ahora >= fin,
     },
 }
+
+zona_horaria = timezone(timedelta(hours=-3))
+
 def cambiar_estado(reserva_id, nuevo_estado):
     error_estado = validar_estado(nuevo_estado)
     if error_estado is not None:
@@ -87,7 +90,7 @@ def cambiar_estado(reserva_id, nuevo_estado):
     if condicion is None:
         return {"error": f"No se puede pasar de '{reserva['estado']}' a '{nuevo_estado}'"}, 409
 
-    ahora = datetime.now()
+    ahora = datetime.now(zona_horaria)
     if not condicion(ahora, reserva["fecha_hora_inicio"], reserva["fecha_hora_fin"]):
         return {"error": f"No se puede pasar a '{nuevo_estado}' en este momento"}, 409
 
