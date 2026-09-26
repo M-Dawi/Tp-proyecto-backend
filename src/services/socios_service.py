@@ -3,7 +3,7 @@ from src.repositories.socios_repository import (
     obtener_socio_por_email, crear_socio, actualizar_socio, contar_socios
 )
 
-from src.validators.socios_validator import validar_datos_crear_socio, validar_datos_actualizar_socio
+from src.validators.socios_validators import validar_datos_crear_socio, validar_datos_actualizar_socio
 
 def armar_error(code, message, description, status_code):
     return {
