@@ -85,3 +85,29 @@ def crear_cancha(id_deporte, nombre, techada, activa):
         "techada": techada,
         "activa": activa
     }
+
+
+def actualizar_cancha(cancha_id, campos):
+    if not campos:
+        return obtener_cancha_por_id(cancha_id)
+
+    permitidos = {"nombre", "precio_hora", "techada", "activa"}
+    campos = {k: v for k, v in campos.items() if k in permitidos}
+
+    if not campos:
+        return obtener_cancha_por_id(cancha_id)
+
+    sets = ", ".join(f"{col} = %s" for col in campos.keys())
+    valores = list(campos.values()) + [cancha_id]
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    query = f"UPDATE canchas SET {sets} WHERE id = %s"
+    cursor.execute(query, tuple(valores))
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    return obtener_cancha_por_id(cancha_id)
