@@ -111,3 +111,15 @@ def actualizar_cancha(cancha_id, campos):
     conn.close()
 
     return obtener_cancha_por_id(cancha_id)
+def eliminar_cancha(cancha_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    query = "DELETE FROM canchas WHERE id = %s"
+    cursor.execute(query, (cancha_id,))
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    return {'Cancha con id eliminada': cancha_id}
