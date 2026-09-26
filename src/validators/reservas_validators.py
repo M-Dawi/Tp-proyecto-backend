@@ -1,4 +1,6 @@
-CAMPOS_OBLIGATORIOS_CREATE = ['id_cancha', 'id_socio', 'fecha_hora_inicio', 'fecha_hora_fin', 'precio_hora', 'precio_total']
+from src.services.socios_service import armar_error
+
+CAMPOS_OBLIGATORIOS_CREATE = ['id_cancha', 'id_socio', 'fecha_hora_inicio', 'fecha_hora_fin']
 ESTADOS_VALIDOS = ("confirmada", "cancelada", "finalizada")
 
 def validar_parametros_paginacion(limit, offset):

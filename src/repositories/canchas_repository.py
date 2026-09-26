@@ -10,7 +10,7 @@ def obtener_canchas(
 ):
     
     conn = get_db_connection()
-    cursor = conn.cursor()
+    cursor = conn.cursor(dictionary=True)
 
     query = "SELECT * FROM canchas WHERE 1=1"
     params = []
@@ -20,7 +20,7 @@ def obtener_canchas(
         params.append(id_deporte)
 
     if nombre is not None:
-        query += " AND nombre ILIKE %s"
+        query += " AND nombre LIKE %s"
         params.append(f"%{nombre}%")
 
     if techada is not None:
@@ -41,6 +41,28 @@ def obtener_canchas(
     conn.close()
 
     return canchas
+
+
+def obtener_cancha_por_id(cancha_id):
+    conexion = None
+    try:
+        # Selecciona las canchas que haya en la base de datos
+        conexion = get_db_connection()
+        cursor = conexion.cursor(dictionary=True)
+
+        query = "SELECT * FROM canchas WHERE id = %s"
+        cursor.execute(query, (cancha_id,))
+        cancha = cursor.fetchone()
+
+        cursor.close()
+        conexion.close()
+        return cancha
+    except Exception as e:
+        print(f"Error de conexión al buscar la cancha {cancha_id}: {e}")
+        if conexion is not None:
+            conexion.close()
+        return None
+
 
 
 def crear_cancha(id_deporte, nombre, techada, activa):

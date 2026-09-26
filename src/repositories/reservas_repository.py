@@ -20,7 +20,33 @@ def obtener_reserva_por_id(reserva_id):
             conexion.close()
         return None
 
-def crear_reserva(datos):
+def buscar_solapamientos(columna, id_col, inicio,fin):
+    # if columna not in ('id_cancha', 'id_socio'):
+    #  return None
+    conexion = None
+    try:
+        # Devuelve una reserva confirmada que se pueda solapar con el horario (por cancha o socio), devuelve None si no hay
+        conexion = get_db_connection()
+        cursor = conexion.cursor(dictionary=True)
+        query = f"""
+        SELECT * FROM reservas  
+        WHERE {columna} = %s
+            AND estado = 'confirmada'
+            AND fecha_hora_inicio < %s
+            AND fecha_hora_fin > %s
+        """
+        cursor.execute(query, (id_col, fin, inicio))
+        solapamiento = cursor.fetchone()
+        cursor.close()
+        conexion.close()
+        return solapamiento
+    except Exception as e:
+        print(f"error: {e}")
+        if conexion is not None:
+            conexion.close()
+        return None    
+
+def crear_reserva(datos, precio_hora, precio_total):
     # Crea una reserva en la base de datos
     conexion = get_db_connection()
     cursor = conexion.cursor()
@@ -29,15 +55,13 @@ def crear_reserva(datos):
         INSERT INTO reservas (id_cancha, id_socio, fecha_hora_inicio, fecha_hora_fin, precio_hora, precio_total, estado)
         VALUES (%s, %s, %s, %s, %s, %s, %s)
     """
-    # OJO: precio_hora y precio_total todavía se esperan en 'datos' porque
-    # el cálculo automático del servidor no está hecho todavía (pendiente)
     valores = (
         datos['id_cancha'],
         datos['id_socio'],
         datos['fecha_hora_inicio'],
         datos['fecha_hora_fin'],
-        datos['precio_hora'],
-        datos['precio_total'],
+        precio_hora,
+        precio_total,
         datos.get('estado', 'confirmada')
     )
     cursor.execute(query, valores)

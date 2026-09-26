@@ -1,6 +1,8 @@
 from flask import Blueprint, jsonify, request
 from src.services.reservas_service import consultar_reserva_por_id, registrar_reserva, cambiar_estado
 from src.validators.reservas_validators import validar_cuerpo_cambio_estado
+from src.validators.reservas_validators import validar_parametros_paginacion
+from src.services.reservas_service import listar_reservas_service
 
 reservas_bp = Blueprint('reservas', __name__)
 
