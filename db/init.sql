@@ -12,6 +12,22 @@ INSERT INTO deportes (id, nombre) VALUES
 (2, 'Tenis'),
 (3, 'Pádel')
 ON DUPLICATE KEY UPDATE nombre=VALUES(nombre);
+-- Crear tabla de canchas
+ CREATE TABLE IF NOT EXISTS canchas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    id_deporte INT NOT NULL,
+    precio_hora INT NOT NULL,
+    techada BOOLEAN NOT NULL DEFAULT FALSE,
+    activa BOOLEAN NOT NULL DEFAULT TRUE,
+    CONSTRAINT fk_canchas_deporte FOREIGN KEY (id_deporte) REFERENCES deportes(id)
+);
+
+-- Datos ficticios de prueba para canchas
+INSERT INTO canchas (nombre, id_deporte, precio_hora, techada, activa) VALUES
+('Cancha 1 - Fútbol 5', 1, 1000000, FALSE, TRUE),
+('Cancha 2 - Tenis', 2, 800000, TRUE, TRUE),
+('Cancha 3 - Pádel', 3, 900000, TRUE, TRUE);
 
 -- Crear tabla de socios
 CREATE TABLE IF NOT EXISTS socios (
@@ -44,10 +60,11 @@ CREATE TABLE IF NOT EXISTS reservas (
     precio_total DECIMAL(10, 2) NOT NULL,
     estado ENUM('confirmada', 'cancelada', 'finalizada') NOT NULL DEFAULT 'confirmada',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_reservas_socio FOREIGN KEY (id_socio) REFERENCES socios(id) ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT fk_reservas_socio FOREIGN KEY (id_socio) REFERENCES socios(id) ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT fk_reservas_cancha FOREIGN KEY (id_cancha) REFERENCES canchas(id) ON DELETE RESTRICT ON UPDATE CASCADE,
+    INDEX idx_reservas_cancha (id_cancha, estado),
+    INDEX idx_reservas_socio (id_socio, estado)
 );
--- Lo dejo comentado hasta que se creen las tablas de socios y canchas
--- CONSTRAINT fk_reservas_cancha FOREIGN KEY (id_cancha) REFERENCES canchas(id) ON DELETE RESTRICT ON UPDATE CASCADE,
 
 -- Datos iniciales de prueba para reservas
 INSERT INTO reservas (id_cancha, id_socio, fecha_hora_inicio, fecha_hora_fin, precio_hora, precio_total, estado)
