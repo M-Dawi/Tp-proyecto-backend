@@ -12,6 +12,8 @@ def listar_canchas(limit, offset):
 
 
     canchas = obtener_canchas(limit, offset)
+        limit=limit,
+        offset=offset
 
     return{
         "canchas": canchas,
@@ -34,7 +36,7 @@ def crear_canchas(datos):
         return {"error": "El 'id_deporte' es obligatorio"}, 400
     if precio_hora is None:
         return {"error": "El 'precio_hora' es obligatorio"}, 400
-    if precio_hora < 0:
+    if precio_hora <= 0:
         return {"error": "El 'precio_hora' debe ser un entero mayor a cero"}, 400
 
     cancha = crear_canchas(nombre, id_deporte, precio_hora, techada, activa)
