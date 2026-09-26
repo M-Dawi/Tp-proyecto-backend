@@ -69,4 +69,18 @@ CREATE TABLE IF NOT EXISTS reservas (
 -- Datos iniciales de prueba para reservas
 INSERT INTO reservas (id_cancha, id_socio, fecha_hora_inicio, fecha_hora_fin, precio_hora, precio_total, estado)
 VALUES (1, 1, '2026-10-20 18:00:00.000000', '2026-10-20 19:00:00.000000', 15000.00, 15000.00, 'confirmada');
--- (1, 1, '2026-09-20', '18:00:00', '19:00:00', 15000.00, 'confirmada');
+
+-- Crear tabla bloqueos de la extenxion opcional
+CREATE TABLE IF NOT EXISTS bloqueos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_cancha INT NOT NULL,
+    fecha DATE NOT NULL,
+    hora_inicio TIME NOT NULL,
+    hora_fin TIME NOT NULL,
+    motivo VARCHAR(255) NOT NULL,
+    CONSTRAINT fk_bloqueos_cancha FOREIGN KEY (id_cancha) REFERENCES canchas(id) ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+-- Dato de prueba para el DELETE (no depende del post se puede cambiar despues)
+INSERT INTO bloqueos (id_cancha, fecha, hora_inicio, hora_fin, motivo)
+VALUES (1, '2026-11-15', '08:00:00', '12:00:00', 'Mantenimiento de iluminación');
