@@ -1,33 +1,12 @@
-from flask import Flask, jsonify
-from db.db import get_db_connection
+from flask import Flask
 from src.routes.reservas_routes import reservas_bp
 from src.routes.socios_routes import socios_bp
-
+from src.routes.deportes_routes import deportes_bp
 app = Flask(__name__)
 
 app.register_blueprint(reservas_bp)
 app.register_blueprint(socios_bp)
-
-@app.route('/api/deportes', methods=['GET'])
-def obtener_deportes():
-    connection = get_db_connection()
-    if not connection:
-        return jsonify({"error": "No se pudo conectar a la base de datos"}), 500
-
-    try:
-        cursor = connection.cursor(dictionary=True)
-        cursor.execute("SELECT id, nombre FROM deportes;")
-        deportes = cursor.fetchall()
-        
-        return jsonify(deportes), 200
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-    finally:
-        if connection.is_connected():
-            cursor.close()
-            connection.close()
+app.register_blueprint(deportes_bp)
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
