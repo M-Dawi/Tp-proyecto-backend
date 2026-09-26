@@ -43,3 +43,7 @@ def patch_cancha(cancha_id):
 
     resultado, codigo = actualizar_cancha(cancha_id, datos)
     return jsonify(resultado), codigo
+@canchas_bp.route('/canchas/<int:cancha_id>', methods=['DELETE'])
+def delete_cancha(cancha_id):
+    resultado, codigo = eliminar_cancha(cancha_id)
+    return jsonify(resultado), codigo
