@@ -2,7 +2,7 @@ from flask import Blueprint, jsonify, request
 from src.services.reservas_service import consultar_reserva_por_id, registrar_reserva, cambiar_estado
 from src.validators.reservas_validators import validar_cuerpo_cambio_estado
 from src.validators.reservas_validators import validar_parametros_paginacion
-from src.services.reservas_service import listar_reservas_service
+from src.services.reservas_service import listar_reservas_service, registrar_reservas_recurrentes
 
 reservas_bp = Blueprint('reservas', __name__)
 
@@ -37,7 +37,7 @@ def obtener_reservas():
 
     return jsonify(resultado), status_code
 
-#Obtener  una reserva por id ---------------
+# Obtener  una reserva por id ---------------
 @reservas_bp.route('/reservas/<int:id>', methods=['GET'])
 def obtener_reserva(id):
     reserva = consultar_reserva_por_id(id)
@@ -46,7 +46,7 @@ def obtener_reserva(id):
 
     return jsonify(reserva), 200
 
-#Crear una reserva --------------------
+# Crear una reserva --------------------
 @reservas_bp.route('/reservas', methods=['POST'])
 def crear_nueva_reserva():
     datos = request.get_json(silent=True)
@@ -58,7 +58,7 @@ def crear_nueva_reserva():
 
     return jsonify(resultado), status_code
 
-#Establecer el estado de una reserva --------------------
+# Establecer el estado de una reserva --------------------
 @reservas_bp.route('/reservas/<int:id>/estado', methods=['PUT'])
 def cambiar_estado_reserva(id):
     datos = request.get_json(silent=True)
@@ -73,3 +73,13 @@ def cambiar_estado_reserva(id):
         return "", 204
 
     return jsonify(resultado), status_code
+
+# Crea una reserva recurrente ----------------
+@reservas_bp.route('/reservas/recurrentes', methods=['POST'])
+def crear_reservas_recurrentes():
+    datos = request.get_json(silent=True)
+    if not datos:
+        return jsonify({"error": "Debe enviar un cuerpo en formato JSON"}), 400
+
+    resultado, status_code = registrar_reservas_recurrentes(datos)
+    return jsonify(resultado) if resultado else ("", status_code), status_code

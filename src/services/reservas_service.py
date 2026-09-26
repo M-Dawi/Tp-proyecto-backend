@@ -160,3 +160,58 @@ def listar_reservas_service(id_cancha, id_socio, estado, fecha_desde, fecha_hast
     }
 
     return respuesta, 200
+
+def registrar_reservas_recurrentes(datos):
+    # Validar formato
+    cant_semanas = datos.get('cantidad_semanas')
+    if type(cant_semanas) is not int or cant_semanas < 2 or cant_semanas > 12:
+        return {"error": "cantidad_semanas debe ser un entero entre 2 y 12"}, 400
+
+    inicio_base = parsear_fecha_hora(datos.get('fecha_hora_inicio'))
+    fin_base = parsear_fecha_hora(datos.get('fecha_hora_fin'))
+    if not inicio_base or not fin_base:
+        return {"error": "Formato de fecha invalido"}, 400
+
+    id_cancha = datos.get('id_cancha')
+    id_socio = datos.get('id_socio')
+    # Validar disponibilidad de cancha y existencia/actividad de socio
+    cancha = obtener_cancha_por_id(id_cancha)
+    if not cancha:
+        return {"error": "La cancha no existe"}, 404
+    if not cancha['activa']:
+        return {"error": "La cancha no esta activa"}, 409
+
+    socio = obtener_socio_por_id(id_socio)
+    if not socio:
+        return {"error": "El socio no existe"}, 404
+    if not socio['activo']:
+        return {"error": "El socio no esta activo"}, 409
+
+
+    fechas_a_reservar = []
+    conflictos = []
+    # Verifica semana por semana segun la cantidad ingresada
+    for i in range(cant_semanas):
+        inicio_i = inicio_base + timedelta(weeks=i)
+        fin_i = fin_base + timedelta(weeks=i)
+
+        solap_cancha = buscar_solapamientos("id_cancha", id_cancha, inicio_i, fin_i)
+        solap_socio = buscar_solapamientos("id_socio", id_socio, inicio_i, fin_i)
+
+        if solap_cancha or solap_socio:
+            conflictos.append(inicio_i.strftime("%Y-%m-%d"))
+        else:
+            fechas_a_reservar.append((inicio_i, fin_i))
+
+    if conflictos:
+        return {
+            "errors": [{
+                "code": "CONFLIC_RECURRENCIA",
+                "message": "Existen solapamientos en la serie solicitada",
+                "level": "error",
+                "description": "No se pudo realizar la reserva recurrente por conflictos de horario"
+            }],
+            "conflictos": conflictos
+        }, 409
+
+    
