@@ -1,4 +1,4 @@
-from src.repositories.canchas_repository import obtener_canchas, crear_canchas
+from src.repositories.canchas_repository import obtener_canchas, crear_canchas as crear_canchas_repo
 
 
 
@@ -11,10 +11,8 @@ def listar_canchas(limit, offset):
         return {"error": "El offset no puede ser negativo"}, 400
 
 
-    canchas = obtener_canchas(limit, offset)
-        limit=limit,
-        offset=offset
-
+    canchas = obtener_canchas(limit=limit, offset=offset)
+    
     return{
         "canchas": canchas,
         "limit": limit,
@@ -39,7 +37,7 @@ def crear_canchas(datos):
     if precio_hora <= 0:
         return {"error": "El 'precio_hora' debe ser un entero mayor a cero"}, 400
 
-    cancha = crear_canchas(nombre, id_deporte, precio_hora, techada, activa)
+    cancha = crear_canchas_repo(nombre, id_deporte, precio_hora, techada, activa)
 
     return cancha, 201
     
