@@ -3,19 +3,9 @@ from src.repositories.socios_repository import (
     obtener_socio_por_email, crear_socio, actualizar_socio, contar_socios
 )
 
-from src.validators.socios_validators import validar_datos_crear_socio, validar_datos_actualizar_socio
+from src.services.errores import armar_error
 
-def armar_error(code, message, description, status_code):
-    return {
-        "errors": [
-            {
-                "code": code,
-                "message": message,
-                "level": "error",
-                "description": description
-            }
-        ]
-    }, status_code
+from src.validators.socios_validators import validar_datos_crear_socio, validar_datos_actualizar_socio
 
 LIMIT_DEFAULT = 10
 LIMIT_MAX = 100
