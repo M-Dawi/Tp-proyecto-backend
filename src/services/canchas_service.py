@@ -1,4 +1,4 @@
-from src.repositories.canchas_repository import obtener_canchas, crear_canchas as crear_canchas_repo
+from src.repositories.canchas_repository import obtener_canchas, crear_cancha as crear_canchas_repo
 
 
 
