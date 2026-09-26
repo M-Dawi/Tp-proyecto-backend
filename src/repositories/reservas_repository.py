@@ -65,7 +65,7 @@ def actualizar_estado(id_reserva, nuevo_estado):
         if conexion:
             conexion.close()
     
- #LISTAS RESERVAS : funciones  que se comunicaran con la BD----
+ #LISTAR RESERVAS : funciones  que se comunicaran con la BD----
 
 def listar_reservas(id_cancha=None, id_socio=None, estado=None, fecha_desde=None, fecha_hasta=None, limit=10, offset=0):
    

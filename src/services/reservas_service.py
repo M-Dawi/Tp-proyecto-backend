@@ -74,16 +74,15 @@ def armar_url_hateoas(base_url, limit, offset, filtros):
     params.append(f"_offset={offset}")
     
     query_string = "&".join(params)
-    return f"{base_url}?{query_string}"
-
+    return {"href": f"{base_url}?{query_string}"}
 def listar_reservas_service(id_cancha, id_socio, estado, fecha_desde, fecha_hasta, limit, offset, base_url):
     # obtener la lista y el conteo de BD
     reservas_db = listar_reservas(id_cancha, id_socio, estado, fecha_desde, fecha_hasta, limit, offset)
     total_registros = contar_reservas(id_cancha, id_socio, estado, fecha_desde, fecha_hasta)
 
-    items = []
+    reservas = []
     for r in reservas_db:
-        items.append({
+        reservas.append({
             "id": int(r["id"]),
             "id_socio": int(r["id_socio"]),
             "id_cancha": int(r["id_cancha"]),
@@ -105,20 +104,20 @@ def listar_reservas_service(id_cancha, id_socio, estado, fecha_desde, fecha_hast
     }
 
     links = {
-        "first": armar_url_hateoas(base_url, limit, 0, filtros),
-        "last": armar_url_hateoas(base_url, limit, max(0, ((total_registros - 1) // limit) * limit), filtros)
+        "_first": armar_url_hateoas(base_url, limit, 0, filtros),
+        "_last": armar_url_hateoas(base_url, limit, max(0, ((total_registros - 1) // limit) * limit), filtros)
     }
 
     if offset > 0:
         prev_offset = max(0, offset - limit)
-        links["prev"] = armar_url_hateoas(base_url, limit, prev_offset, filtros)
+        links["_prev"] = armar_url_hateoas(base_url, limit, prev_offset, filtros)
 
     if offset + limit < total_registros:
         next_offset = offset + limit
-        links["next"] = armar_url_hateoas(base_url, limit, next_offset, filtros)
+        links["_next"] = armar_url_hateoas(base_url, limit, next_offset, filtros)
 
     respuesta = {
-        "items": items,
+        "reservas": reservas,
         "_links": links
     }
 
