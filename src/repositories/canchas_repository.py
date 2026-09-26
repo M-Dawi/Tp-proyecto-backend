@@ -10,7 +10,7 @@ def obtener_canchas(
 ):
     
     conn = get_db_connection()
-    cursor = conn.cursor()
+    cursor = conn.cursor(dictionary=True)
 
     query = "SELECT * FROM canchas WHERE 1=1"
     params = []
