@@ -42,6 +42,6 @@ def patch_socios(socio_id):
     respuesta, codigo = actualizar_socio_service(socio_id, cuerpo)
 
     if codigo == 204:
-        return None, 204
+        return "", 204
 
     return jsonify(respuesta), codigo

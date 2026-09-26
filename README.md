@@ -24,21 +24,26 @@ Tp-proyecto-backend/
 ├── requirements.txt                       # Dependencias Python.
 ├── src/
 │   ├── repositories/
-│   │   ├── canchas_repository.py          # Funciones para conectar con base de datos de canchas. Sentencias SQL.
+│   │   ├── bloqueo_repository.py          # Funciones para conectar con base de datos de bloqueo. Sentencias SQL.
+│   │   └── canchas_repository.py          # Funciones para conectar con base de datos de canchas. Sentencias SQL.
 │   │   └── deportes_repository.py         # Funciones para conectar con base de datos de deportes. Sentencias SQL.
 │   │   └── reservas_repository.py         # Funciones para conectar con base de datos de reservas. Sentencias SQL.
 │   │   └── socios_repository.py           # Funciones para conectar con base de datos de socios. Sentencias SQL.
 │   ├── routes/
-│   │   ├── canchas_routes.py              # Endpoints REST de canchas.
+│   │   ├── bloqueo_routes.py              # Endpoints REST de bloqueos.
+│   │   └── canchas_routes.py              # Endpoints REST de canchas.
 │   │   └── deportes_routes.py             # Endpoints REST de deportes.
 │   │   └── reservas_routes.py             # Endpoints REST de reservas.
 │   │   └── socios_routes.py               # Endpoints REST de socios.
 │   ├── services/
-│   │   ├── canchas_services.py            # Logica de negocio de canchas.
-│   │   └── reservas_services.py           # Logica de negocio de reservas.
-│   │   └── socios_services.py             # Logica de negocio de socios.
+│   │   ├── bloqueo_service.py            # Logica de negocio de bloqueo.
+│   │   └── canchas_service.py            # Logica de negocio de canchas.
+│   │   └── errores.py                    # Función para armar respuestas de error según el formato del swagger.
+│   │   └── reservas_service.py           # Logica de negocio de reservas.
+│   │   └── socios_service.py             # Logica de negocio de socios.
 │   └── validators/
-│       ├── fechas.py                      # Validacion de entrada para fechas.
+│       └── canchas_validators.py          # Validacion de entrada para canchas.
+│       └── fechas.py                      # Validacion de entrada para fechas.
 │       └── reservas_validators.py         # Validacion de entrada para reservas.
 │       └── socios_validators.py           # Validacion de entrada para socios.
 ├── db/
