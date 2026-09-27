@@ -1,8 +1,11 @@
 from src.repositories.bloqueo_repository import (
-    obtener_bloqueo_por_id, eliminar_bloqueo
+    obtener_bloqueo_por_id, 
+    eliminar_bloqueo,
+    contar_bloqueos, 
+    listar_bloqueos , 
+    crear_bloqueo
 )
 from src.services.errores import armar_error
-from src.repositories.bloqueo_repository import contar_bloqueos, listar_bloqueos , crear_bloqueo
 
 def eliminar_bloqueo_service(bloqueo_id):
     try:
