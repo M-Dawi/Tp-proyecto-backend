@@ -26,3 +26,27 @@ def validar_campos_actualizacion(datos):
         return "El campo 'activa' debe ser booleano."
 
     return None
+
+def validar_disponibilidad(args):
+    if args is None:
+        return "Faltan parámetros obligatorios."
+
+    if not args.get("fecha"):
+        return "El parámetro 'fecha' es obligatorio."
+
+    if not args.get("hora_inicio"):
+        return "El parámetro 'hora_inicio' es obligatorio."
+
+    if not args.get("hora_fin"):
+        return "El parámetro 'hora_fin' es obligatorio."
+
+    if "id_deporte" in args and args["id_deporte"]:
+        try:
+            int(args["id_deporte"])
+        except (TypeError, ValueError):
+            return "El parámetro 'id_deporte' debe ser un entero."
+
+    if "techada" in args and args["techada"] not in ("true", "false"):
+        return "El parámetro 'techada' debe ser 'true' o 'false'."
+
+    return None

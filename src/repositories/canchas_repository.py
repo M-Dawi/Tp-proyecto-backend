@@ -111,6 +111,7 @@ def actualizar_cancha(cancha_id, campos):
     conn.close()
 
     return obtener_cancha_por_id(cancha_id)
+
 def eliminar_cancha(cancha_id):
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -123,3 +124,82 @@ def eliminar_cancha(cancha_id):
     conn.close()
 
     return {'Cancha con id eliminada': cancha_id}
+
+
+def obtener_canchas_disponibles(fecha, hora_inicio, hora_fin,
+                                id_deporte=None, techada=None,
+                                limit=10, offset=0):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    query = """
+        SELECT c.*
+        FROM canchas c
+        WHERE c.activa = TRUE
+          AND NOT EXISTS (
+              SELECT 1
+              FROM reservas r
+              WHERE r.id_cancha = c.id
+                AND r.estado = 'confirmada'
+                AND r.fecha_hora_inicio < %s
+                AND r.fecha_hora_fin    > %s
+          )
+    """
+    # fecha_hora_fin del intervalo solicitado y fecha_hora_inicio
+    params = [f"{fecha} {hora_fin}:00", f"{fecha} {hora_inicio}:00"]
+
+    if id_deporte is not None:
+        query += " AND c.id_deporte = %s"
+        params.append(id_deporte)
+
+    if techada is not None:
+        query += " AND c.techada = %s"
+        params.append(techada)
+
+    query += " ORDER BY c.id ASC LIMIT %s OFFSET %s"
+    params.extend([limit, offset])
+
+    cursor.execute(query, tuple(params))
+    canchas = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    return canchas
+
+
+def contar_canchas_disponibles(fecha, hora_inicio, hora_fin,
+                               id_deporte=None, techada=None):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    query = """
+        SELECT COUNT(*)
+        FROM canchas c
+        WHERE c.activa = TRUE
+          AND NOT EXISTS (
+              SELECT 1
+              FROM reservas r
+              WHERE r.id_cancha = c.id
+                AND r.estado = 'confirmada'
+                AND r.fecha_hora_inicio < %s
+                AND r.fecha_hora_fin    > %s
+          )
+    """
+    params = [f"{fecha} {hora_fin}:00", f"{fecha} {hora_inicio}:00"]
+
+    if id_deporte is not None:
+        query += " AND c.id_deporte = %s"
+        params.append(id_deporte)
+
+    if techada is not None:
+        query += " AND c.techada = %s"
+        params.append(techada)
+
+    cursor.execute(query, tuple(params))
+    total = cursor.fetchone()[0]
+
+    cursor.close()
+    conn.close()
+
+    return total

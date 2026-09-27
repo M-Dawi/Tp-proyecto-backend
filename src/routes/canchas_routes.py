@@ -1,6 +1,11 @@
 from flask import Blueprint, request, jsonify  # type: ignore[reportMissingImports]
-from src.services.canchas_service import listar_canchas, crear_canchas, obtener_cancha, actualizar_cancha # type: ignore
-
+from src.services.canchas_service import (
+    listar_canchas, 
+    crear_canchas, 
+    obtener_cancha, 
+    actualizar_cancha,
+    listar_canchas_disponibles
+)
 canchas_bp = Blueprint('canchas',__name__)
 
 @canchas_bp.route('/canchas', methods=['GET'])
@@ -27,7 +32,6 @@ def post_canchas():
     return jsonify(resultado), codigo
 
 
-
 @canchas_bp.route('/canchas/<int:cancha_id>', methods=['GET'])
 def get_cancha(cancha_id):
     resultado, codigo = obtener_cancha(cancha_id)
@@ -43,7 +47,25 @@ def patch_cancha(cancha_id):
 
     resultado, codigo = actualizar_cancha(cancha_id, datos)
     return jsonify(resultado), codigo
+
 @canchas_bp.route('/canchas/<int:cancha_id>', methods=['DELETE'])
 def delete_cancha(cancha_id):
     resultado, codigo = eliminar_cancha(cancha_id)
+    return jsonify(resultado), codigo
+
+@canchas_bp.route('/canchas/disponibles', methods=['GET'])
+def get_canchas_disponibles():
+    limit = int(request.args.get('_limit', 10))
+    offset = int(request.args.get('_offset', 0))
+
+    resultado, codigo = listar_canchas_disponibles(
+        fecha=request.args.get('fecha'),
+        hora_inicio=request.args.get('hora_inicio'),
+        hora_fin=request.args.get('hora_fin'),
+        id_deporte=request.args.get('id_deporte'),
+        techada=request.args.get('techada'),
+        limit=limit,
+        offset=offset,
+    )
+
     return jsonify(resultado), codigo

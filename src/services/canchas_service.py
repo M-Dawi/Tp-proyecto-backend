@@ -2,6 +2,8 @@ from src.repositories.canchas_repository import (obtener_canchas, crear_cancha a
 from src.repositories.canchas_repository import (
     obtener_cancha_por_id,
     actualizar_cancha as repo_actualizar_cancha,
+    obtener_canchas_disponibles,
+    contar_canchas_disponibles,
 )
 from src.validators import canchas_validators
 
@@ -80,3 +82,45 @@ def eliminar_cancha(cancha_id):
         return {"error": "No se pudo eliminar la cancha con reserva"}, 500
     
     return {"Cancha eliminada exitosamente"}, 200
+
+
+def listar_canchas_disponibles(fecha, hora_inicio, hora_fin,
+                               id_deporte=None, techada=None,
+                               limit=10, offset=0):
+    error = canchas_validators.validar_disponibilidad({
+        "fecha": fecha,
+        "hora_inicio": hora_inicio,
+        "hora_fin": hora_fin,
+        "id_deporte": id_deporte,
+        "techada": techada,
+    })
+    if error:
+        return {"error": error}, 400
+
+    id_deporte_int = int(id_deporte) if id_deporte not in (None, "") else None
+    techada_bool = (techada == "true") if techada in ("true", "false") else None
+
+    canchas = obtener_canchas_disponibles(
+        fecha=fecha,
+        hora_inicio=hora_inicio,
+        hora_fin=hora_fin,
+        id_deporte=id_deporte_int,
+        techada=techada_bool,
+        limit=limit,
+        offset=offset,
+    )
+
+    total = contar_canchas_disponibles(
+        fecha=fecha,
+        hora_inicio=hora_inicio,
+        hora_fin=hora_fin,
+        id_deporte=id_deporte_int,
+        techada=techada_bool,
+    )
+
+    return {
+        "canchas": canchas,
+        "limit": limit,
+        "offset": offset,
+        "total": total,
+    }, 200
