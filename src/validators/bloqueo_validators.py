@@ -2,7 +2,8 @@ from datetime import date
 from src.services.errores import armar_error
 
 PARAMETROS_PERMITIDOS = {"id_cancha", "fecha", "_limit", "_offset"}
-
+CAMPOS_OBLIGATORIOS_CREATE = ["id_cancha", "fecha", "hora_inicio", "hora_fin", "motivo"]
+CAMPOS_PERMITIDOS_CREATE = set(CAMPOS_OBLIGATORIOS_CREATE)
 
 def validar_filtros_listado(args):
    
@@ -67,3 +68,67 @@ def validar_filtros_listado(args):
     filtros["offset"] = int(offset_raw)
 
     return filtros, None
+
+def validar_campos_creacion(datos):
+
+    if not isinstance(datos, dict) or not datos:
+        return None, armar_error(
+            "CUERPO_INVALIDO",
+            "El cuerpo no puede estar vacio",
+            "Se esperaba un objeto JSON con los campos del bloqueo",
+            400
+        )
+
+    desconocidos = set(datos.keys()) - CAMPOS_PERMITIDOS_CREATE
+    if desconocidos:
+        return None, armar_error(
+            "CAMPO_DESCONOCIDO",
+            "Se recibieron campos no soportados",
+            f"Campos invalidos: {', '.join(sorted(desconocidos))}",
+            400
+        )
+
+    for campo in CAMPOS_OBLIGATORIOS_CREATE:
+        if campo not in datos or datos[campo] is None or str(datos[campo]).strip() == "":
+            return None, armar_error(
+                "CAMPO_FALTANTE",
+                f"El campo '{campo}' es obligatorio",
+                f"Falta el campo '{campo}' en el cuerpo",
+                400
+            )
+
+    id_cancha = datos.get("id_cancha")
+    if isinstance(id_cancha, bool) or not isinstance(id_cancha, int) or id_cancha <= 0:
+        return None, armar_error(
+            "VALOR_INVALIDO",
+            "id_cancha invalido",
+            "id_cancha debe ser un entero positivo",
+            400
+        )
+
+    fecha_raw = datos.get("fecha")
+    try:
+        date.fromisoformat(fecha_raw)
+    except (ValueError, TypeError):
+        return None, armar_error(
+            "VALOR_INVALIDO",
+            "Fecha invalida",
+            "La fecha debe tener el formato YYYY-MM-DD",
+            400
+        )
+
+    if datos["hora_inicio"] >= datos["hora_fin"]:
+        return None, armar_error(
+            "VALOR_INVALIDO",
+            "Intervalo horario invalido",
+            "hora_inicio debe ser menor que hora_fin",
+            400
+        )
+
+    return {
+        "id_cancha": id_cancha,
+        "fecha": fecha_raw,
+        "hora_inicio": datos["hora_inicio"],
+        "hora_fin": datos["hora_fin"],
+        "motivo": datos["motivo"],
+    }, None

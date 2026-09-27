@@ -2,7 +2,7 @@ from src.repositories.bloqueo_repository import (
     obtener_bloqueo_por_id, eliminar_bloqueo
 )
 from src.services.errores import armar_error
-from src.repositories.bloqueo_repository import contar_bloqueos, listar_bloqueos
+from src.repositories.bloqueo_repository import contar_bloqueos, listar_bloqueos , crear_bloqueo
 
 def eliminar_bloqueo_service(bloqueo_id):
     try:
@@ -99,3 +99,31 @@ def _armar_links(base_url, id_cancha, fecha, limit, offset, total):
         links["_next"] = construir(offset + limit)
 
     return links
+
+def crear_bloqueo_service(datos):
+    try:
+        bloqueo = crear_bloqueo(
+            datos["id_cancha"],
+            datos["fecha"],
+            datos["hora_inicio"],
+            datos["hora_fin"],
+            datos["motivo"],
+        )
+
+        return {
+            "id": int(bloqueo["id"]),
+            "id_cancha": int(bloqueo["id_cancha"]),
+            "fecha": str(bloqueo["fecha"]),
+            "hora_inicio": str(bloqueo["hora_inicio"])[:8],
+            "hora_fin": str(bloqueo["hora_fin"])[:8],
+            "motivo": str(bloqueo["motivo"]) if bloqueo.get("motivo") else ""
+        }, 201
+
+    except Exception as e:
+        print("Error:", e)
+        return armar_error(
+            "INTERNAL_SERVER_ERROR",
+            "Error interno del servidor",
+            "Ocurrió un error inesperado",
+            500
+        )
