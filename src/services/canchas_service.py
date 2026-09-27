@@ -70,13 +70,13 @@ def actualizar_cancha(cancha_id, datos):
 
     return repo_actualizar_cancha(cancha_id, limpio), 200
 
-def elimar_cancha(cancha_id):
-    cancha = obtenerr_cancha_por_id(cancha_id)
+def eliminar_cancha(cancha_id):
+    cancha = obtener_cancha_por_id(cancha_id)
     if cancha is None:
         return {"error": "Cancha no encontrada"}, 404
     
     eliminada = eliminar_cancha_repo(cancha_id)
     if not eliminada:
-        return {"error": "No se pudo eliminar la cancha","cancha con reserva"}, 500
+        return {"error": "No se pudo eliminar la cancha con reserva"}, 500
     
     return {"Cancha eliminada exitosamente"}, 200

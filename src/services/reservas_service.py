@@ -195,10 +195,11 @@ def registrar_reservas_recurrentes(datos):
         inicio_i = inicio_base + timedelta(weeks=i)
         fin_i = fin_base + timedelta(weeks=i)
 
+        reserva_valida = validar_intervalo_reserva(inicio_i, fin_i)
         solap_cancha = buscar_solapamientos("id_cancha", id_cancha, inicio_i, fin_i)
         solap_socio = buscar_solapamientos("id_socio", id_socio, inicio_i, fin_i)
 
-        if solap_cancha or solap_socio:
+        if solap_cancha or solap_socio or reserva_valida is not None :
             conflictos.append(inicio_i.strftime("%Y-%m-%d"))
         else:
             fechas_a_reservar.append((inicio_i, fin_i))
@@ -214,4 +215,18 @@ def registrar_reservas_recurrentes(datos):
             "conflictos": conflictos
         }, 409
 
-    
+    reservas_creadas = []
+    precio_hora = cancha['precio_hora']
+    for inicio_i, fin_i in fechas_a_reservar:    
+        horas = ((fin_i - inicio_i).total_seconds())/3600
+        precio_total = int(precio_hora * horas)
+        datos_reserva = {
+            "id_cancha": id_cancha,
+            "id_socio": id_socio,
+            "fecha_hora_inicio": formatear_fecha_hora(inicio_i),
+            "fecha_hora_fin": formatear_fecha_hora(fin_i)
+        }
+        nuevo_id = crear_reserva(datos_reserva, precio_hora, precio_total)
+        reserva = consultar_reserva_por_id(nuevo_id)
+        reservas_creadas.append(reserva)
+    return {"reservas": reservas_creadas}, 201
