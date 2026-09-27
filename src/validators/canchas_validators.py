@@ -1,4 +1,7 @@
-CAMPOS_EDITABLES_PATCH = {'nombre', 'precio_hora', 'techada', 'activa'}
+import re
+from datetime import date
+
+PATRON_HORA_EN_PUNTO = re.compile(r'^([01]\d|2[0-3]):00:00$')
 
 
 def validar_campos_actualizacion(datos):
@@ -31,14 +34,28 @@ def validar_disponibilidad(args):
     if args is None:
         return "Faltan parámetros obligatorios."
 
-    if not args.get("fecha"):
+    fecha = args.get("fecha")
+    hora_inicio = args.get("hora_inicio")
+    hora_fin = args.get("hora_fin")
+
+    if not fecha:
         return "El parámetro 'fecha' es obligatorio."
-
-    if not args.get("hora_inicio"):
+    if not hora_inicio:
         return "El parámetro 'hora_inicio' es obligatorio."
-
-    if not args.get("hora_fin"):
+    if not hora_fin:
         return "El parámetro 'hora_fin' es obligatorio."
+
+    try:
+        date.fromisoformat(fecha)
+    except (ValueError, TypeError):
+        return "El parámetro 'fecha' debe tener el formato YYYY-MM-DD."
+
+    if not PATRON_HORA_EN_PUNTO.match(hora_inicio):
+        return "El parámetro 'hora_inicio' debe tener formato HH:00:00."
+    if not PATRON_HORA_EN_PUNTO.match(hora_fin):
+        return "El parámetro 'hora_fin' debe tener formato HH:00:00."
+    if hora_inicio >= hora_fin:
+        return "'hora_inicio' debe ser anterior a 'hora_fin'."
 
     if "id_deporte" in args and args["id_deporte"]:
         try:

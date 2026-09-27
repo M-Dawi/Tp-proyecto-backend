@@ -142,7 +142,7 @@ def obtener_canchas_disponibles(fecha, hora_inicio, hora_fin,
           )
     """
     # fecha_hora_fin del intervalo solicitado y fecha_hora_inicio
-    params = [f"{fecha} {hora_fin}:00", f"{fecha} {hora_inicio}:00"]
+    params = [f"{fecha} {hora_fin}", f"{fecha} {hora_inicio}"]
 
     if id_deporte is not None:
         query += " AND c.id_deporte = %s"
@@ -212,7 +212,7 @@ def contar_canchas_disponibles(fecha, hora_inicio, hora_fin,
                 AND r.fecha_hora_fin    > %s
           )
     """
-    params = [f"{fecha} {hora_fin}:00", f"{fecha} {hora_inicio}:00"]
+    params = [f"{fecha} {hora_fin}", f"{fecha} {hora_inicio}"]
 
     if id_deporte is not None:
         query += " AND c.id_deporte = %s"

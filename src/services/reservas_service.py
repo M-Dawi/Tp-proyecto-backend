@@ -22,14 +22,36 @@ def validar_datos_reserva(datos):
     error_campos = validar_campos_creacion(datos)
     if error_campos is not None:
         return ({"error": error_campos}, 400), None
+
     id_cancha = datos['id_cancha']
     id_socio = datos['id_socio']
     inicio = parsear_fecha_hora(datos['fecha_hora_inicio'])
     fin = parsear_fecha_hora(datos['fecha_hora_fin'])
     if inicio is None or fin is None:
         return ({"error": "La fecha tiene formato invalido"}, 400), None
-    intervalo = validar_intervalo_reserva(inicio, fin)
 
+    error_intervalo = validar_intervalo_reserva(inicio, fin)
+    if error_intervalo is not None:
+        return ({"error": error_intervalo}, 400), None
+
+    cancha = obtener_cancha_por_id(id_cancha)
+    if cancha is None:
+        return ({"error": "La cancha no existe"}, 404), None
+    if not cancha['activa']:
+        return ({"error": "La cancha no esta activa"}, 409), None
+
+    socio = obtener_socio_por_id(id_socio)
+    if socio is None:
+        return ({"error": "El socio no existe"}, 404), None
+    if not socio['activo']:
+        return ({"error": "El socio no esta activo"}, 409), None
+
+    if buscar_solapamientos("id_cancha", id_cancha, inicio, fin):
+        return ({"error": "La cancha ya está reservada en ese horario"}, 409), None
+    if buscar_solapamientos("id_socio", id_socio, inicio, fin):
+        return ({"error": "El socio ya tiene una reserva en ese horario"}, 409), None
+
+    return None, {"inicio": inicio, "fin": fin, "cancha": cancha, "socio": socio}
 
 def registrar_reserva(datos):
     error, datos_validados = validar_datos_reserva(datos)
@@ -73,7 +95,7 @@ def cambiar_estado(reserva_id, nuevo_estado):
     if condicion is None:
         return {"error": f"No se puede pasar de '{reserva['estado']}' a '{nuevo_estado}'"}, 409
 
-    ahora = datetime.now(zona_horaria)
+    ahora = datetime.now(zona_horaria).replace(tzinfo=None)
     if not condicion(ahora, reserva["fecha_hora_inicio"], reserva["fecha_hora_fin"]):
         return {"error": f"No se puede pasar a '{nuevo_estado}' en este momento"}, 409
 
@@ -82,7 +104,6 @@ def cambiar_estado(reserva_id, nuevo_estado):
         return {"error": "No se pudo actualizar la reserva"}, 500
 
     return None, 204
-    #-------
 
 def armar_url_hateoas(base_url, limit, offset, filtros):
     params = []

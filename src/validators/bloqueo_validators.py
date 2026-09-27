@@ -1,6 +1,8 @@
 from datetime import date
 from src.services.errores import armar_error
+import re
 
+PATRON_HORA_EN_PUNTO = re.compile(r'^([01]\d|2[0-3]):00:00$')
 PARAMETROS_PERMITIDOS = {"id_cancha", "fecha", "_limit", "_offset"}
 CAMPOS_OBLIGATORIOS_CREATE = ["id_cancha", "fecha", "hora_inicio", "hora_fin", "motivo"]
 CAMPOS_PERMITIDOS_CREATE = set(CAMPOS_OBLIGATORIOS_CREATE)
@@ -117,13 +119,24 @@ def validar_campos_creacion(datos):
             400
         )
 
-    if datos["hora_inicio"] >= datos["hora_fin"]:
-        return None, armar_error(
-            "VALOR_INVALIDO",
-            "Intervalo horario invalido",
-            "hora_inicio debe ser menor que hora_fin",
-            400
-        )
+        hora_inicio = datos["hora_inicio"]
+        hora_fin = datos["hora_fin"]
+
+        if not isinstance(hora_inicio, str) or not PATRON_HORA_EN_PUNTO.match(hora_inicio):
+            return None, armar_error(
+                "VALOR_INVALIDO", "Hora invalida",
+                "hora_inicio debe tener formato HH:00:00", 400
+            )
+        if not isinstance(hora_fin, str) or not PATRON_HORA_EN_PUNTO.match(hora_fin):
+            return None, armar_error(
+                "VALOR_INVALIDO", "Hora invalida",
+                "hora_fin debe tener formato HH:00:00", 400
+            )
+        if hora_inicio >= hora_fin:
+            return None, armar_error(
+                "VALOR_INVALIDO", "Intervalo horario invalido",
+                "hora_inicio debe ser menor que hora_fin", 400
+            )
 
     return {
         "id_cancha": id_cancha,

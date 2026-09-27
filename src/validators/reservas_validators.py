@@ -9,9 +9,18 @@ def validar_parametros_paginacion(limit, offset):
 
 
 def validar_campos_creacion(datos):
+    if not isinstance(datos, dict):
+        return "El cuerpo debe ser un objeto JSON."
+
     for campo in CAMPOS_OBLIGATORIOS_CREATE:
         if campo not in datos or datos[campo] is None or str(datos[campo]).strip() == "":
             return f"El campo '{campo}' es obligatorio."
+
+    for campo in ("id_cancha", "id_socio"):
+        valor = datos[campo]
+        if isinstance(valor, bool) or not isinstance(valor, int) or valor <= 0:
+            return f"El campo '{campo}' debe ser un entero positivo."
+
     return None
 
 
