@@ -107,14 +107,14 @@ def armar_url_hateoas(base_url, limit, offset, filtros):
         if valor is not None:
             params.append(f"{clave}={valor}")
             
-    params.append(f"_limit={limit}")
-    params.append(f"_offset={offset}")
+    params.append(f"_limit={str(limit)}")
+    params.append(f"_offset={str(offset)}")
     
     query_string = "&".join(params)
-    return { "href": f"{base_url}?{query_string}"}
+    return {"href": f"{base_url}?{query_string}"}
 
 def listar_reservas_service(id_cancha, id_socio, estado, fecha_desde, fecha_hasta, limit, offset, base_url):
-    # Validar estado de la peticion
+    # Validar estado de peticion
     if estado is not None:
         error_estado = validar_estado(estado)
         if error_estado is not None:
@@ -147,9 +147,11 @@ def listar_reservas_service(id_cancha, id_socio, estado, fecha_desde, fecha_hast
         "fecha_hasta": fecha_hasta
     }
 
+    last_offset = max(0, ((total_registros - 1) // limit) * limit) if total_registros > 0 else 0
+
     _links = {
         "_first": armar_url_hateoas(base_url, limit, 0, filtros),
-        "_last": armar_url_hateoas(base_url, limit, max(0, ((total_registros - 1) // limit) * limit), filtros)
+        "_last": armar_url_hateoas(base_url, limit, last_offset, filtros)
     }
 
     if offset > 0:
