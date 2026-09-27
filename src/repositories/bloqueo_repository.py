@@ -63,3 +63,58 @@ def eliminar_bloqueo(bloqueo_id):
         if conexion is not None:
             conexion.close()
         return False
+
+def contar_bloqueos(id_cancha=None, fecha=None):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    filtros = []
+    valores = []
+
+    if id_cancha is not None:
+        filtros.append("id_cancha = %s")
+        valores.append(id_cancha)
+    if fecha is not None:
+        filtros.append("fecha = %s")
+        valores.append(fecha)
+
+    query = "SELECT COUNT(*) FROM bloqueos"
+    if filtros:
+        query += " WHERE " + " AND ".join(filtros)
+
+    cursor.execute(query, tuple(valores))
+    total_bloqueos = cursor.fetchone()[0]
+
+    cursor.close()
+    conn.close()
+    return total_bloqueos
+
+def listar_bloqueos(id_cancha=None, fecha=None, limit=10, offset=0):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    filtros = []
+    valores = []
+
+    if id_cancha is not None:
+        filtros.append("id_cancha = %s")
+        valores.append(id_cancha)
+    if fecha is not None:
+        filtros.append("fecha = %s")
+        valores.append(fecha)
+
+    query = "SELECT * FROM bloqueos"
+
+    if filtros:
+        query += " WHERE " + " AND ".join(filtros)
+
+    query += " ORDER BY id ASC LIMIT %s OFFSET %s"
+
+    valores.append(limit)
+    valores.append(offset)
+
+    cursor.execute(query, tuple(valores))
+    bloqueos = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return bloqueos   

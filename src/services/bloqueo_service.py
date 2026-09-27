@@ -2,7 +2,7 @@ from src.repositories.bloqueo_repository import (
     obtener_bloqueo_por_id, eliminar_bloqueo
 )
 from src.services.errores import armar_error
-from src.repositories.bloqueos_repository import contar_bloqueos, listar_bloqueos
+from src.repositories.bloqueo_repository import contar_bloqueos, listar_bloqueos
 
 def eliminar_bloqueo_service(bloqueo_id):
     try:
@@ -40,11 +40,16 @@ def obtener_bloqueos_service(filtros, base_url):
     limit = filtros["limit"]
     offset = filtros["offset"]
 
-    total = contar_bloqueos(id_cancha, fecha)
-    filas = listar_bloqueos(id_cancha, fecha, limit, offset)
+    try:
+     total = contar_bloqueos(id_cancha, fecha)
 
-    bloqueos = []
-    for fila in filas:
+     if not filas:
+         return "", 204
+
+     filas = listar_bloqueos(id_cancha, fecha, limit, offset)
+
+     bloqueos = []
+     for fila in filas:
         bloqueos.append({
             "id": int(fila["id"]),
             "id_cancha": int(fila["id_cancha"]),
@@ -54,10 +59,19 @@ def obtener_bloqueos_service(filtros, base_url):
             "motivo": str(fila["motivo"]) if fila.get("motivo") else ""
         })
 
-    return {
+     return {
         "bloqueos": bloqueos,
         "_links": _armar_links(base_url, id_cancha, fecha, limit, offset, total)
-    }, 200
+     }, 200
+
+    except Exception as e:
+        print("Error:", e)
+        return armar_error(
+                    "INTERNAL_SERVER_ERROR", 
+                    "Error interno del servidor", 
+                    "Ocurrió un error inesperado",
+                    500
+                )
 
 
 def _armar_links(base_url, id_cancha, fecha, limit, offset, total):

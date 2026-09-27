@@ -1,7 +1,17 @@
 from flask import Blueprint, jsonify, request
-from src.services.bloqueo_service import crear_bloqueo, eliminar_bloqueo_service
+from src.services.bloqueo_service import crear_bloqueo, eliminar_bloqueo_service, obtener_bloqueos_service
+from src.validators.bloqueo_validators import validar_filtros_listado
 
 bloqueos_bp = Blueprint('bloqueos',__name__)
+
+@bloqueos_bp.route("/bloqueos", methods=["GET"])
+def get_bloqueo():
+    filtros, error = validar_filtros_listado(request.args)
+    if error:
+        cuerpo, codigo = error
+        return jsonify(cuerpo), codigo
+    repuesta, codigo = obtener_bloqueos_service(filtros, request.base_url)
+    return jsonify(repuesta), codigo
 
 @bloqueos_bp.route("/bloqueos", methods=["POST"])
 def create_bloqueo():
