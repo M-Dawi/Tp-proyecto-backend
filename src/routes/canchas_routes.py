@@ -13,13 +13,18 @@ canchas_bp = Blueprint('canchas',__name__)
 def get_canchas():
 
     try:
-        limit = int(request.args.get('_limit', 10))
-        offset = int(request.args.get('_offset', 0))
+        limit = int(request.args.get('limit', 10))
+        offset = int(request.args.get('offset', 0))
     except (TypeError, ValueError):
-        return jsonify({"error": "_limit y _offset deben ser enteros"}), 400
+        return jsonify({"error": "limit y offset deben ser enteros"}), 400
 
     resultado, codigo = listar_canchas(limit, offset, request.args, request.base_url)
 
+@canchas_bp.route('/canchas/<int:cancha_id>', methods=['DELETE'])
+def delete_cancha(cancha_id):
+    resultado, codigo = eliminar_cancha(cancha_id)
+    if codigo == 204:
+        return "", 204
     return jsonify(resultado), codigo
 
 @canchas_bp.route('/canchas', methods=['POST'])

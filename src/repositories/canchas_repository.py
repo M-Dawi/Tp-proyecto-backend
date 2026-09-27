@@ -74,20 +74,13 @@ def crear_cancha(id_deporte, nombre, precio_hora, techada, activa):
         VALUES (%s, %s, %s, %s, %s)
     """
     cursor.execute(query, (id_deporte, nombre, precio_hora, techada, activa))
-    nuevo_id = cursor.lastrowid
 
     conn.commit()
+    nuevo_id = cursor.lastrowid
     cursor.close()
     conn.close()
 
-    return {
-        "id": nuevo_id,
-        "id_deporte": id_deporte,
-        "nombre": nombre,
-        "precio_hora": precio_hora,
-        "techada": techada,
-        "activa": activa
-    }
+    return obtener_cancha_por_id(nuevo_id)
 
 
 def actualizar_cancha(cancha_id, campos):
@@ -126,7 +119,7 @@ def eliminar_cancha(cancha_id):
     cursor.close()
     conn.close()
 
-    return {'Cancha con id eliminada': cancha_id}
+    return True
 
 
 def obtener_canchas_disponibles(fecha, hora_inicio, hora_fin,

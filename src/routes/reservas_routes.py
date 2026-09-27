@@ -80,4 +80,4 @@ def crear_reservas_recurrentes():
         return jsonify({"error": "Debe enviar un cuerpo en formato JSON"}), 400
 
     resultado, status_code = registrar_reservas_recurrentes(datos)
-    return jsonify(resultado) if resultado else ("", status_code), status_code
+    return jsonify(resultado), status_code
