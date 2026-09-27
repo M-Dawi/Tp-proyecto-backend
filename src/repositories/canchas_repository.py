@@ -65,23 +65,26 @@ def obtener_cancha_por_id(cancha_id):
 
 
 
-def crear_cancha(id_deporte, nombre, techada, activa):
+def crear_cancha(id_deporte, nombre, precio_hora, techada, activa):
     conn = get_db_connection()
     cursor = conn.cursor()
 
     query = """
-        INSERT INTO canchas (id_deporte, nombre, techada, activa)
-        VALUES (%s, %s, %s, %s)
+        INSERT INTO canchas (id_deporte, nombre, precio_hora, techada, activa)
+        VALUES (%s, %s, %s, %s, %s)
     """
-    cursor.execute(query, (id_deporte, nombre, techada, activa))
-
+    cursor.execute(query, (id_deporte, nombre, precio_hora, techada, activa))
+    nuevo_id = cursor.lastrowid
+    
     conn.commit()
     cursor.close()
     conn.close()
 
     return {
+        "id": nuevo_id,
         "id_deporte": id_deporte,
         "nombre": nombre,
+        "precio_hora": precio_hora,
         "techada": techada,
         "activa": activa
     }
