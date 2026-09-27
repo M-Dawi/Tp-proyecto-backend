@@ -114,6 +114,12 @@ def armar_url_hateoas(base_url, limit, offset, filtros):
     return { "href": f"{base_url}?{query_string}"}
 
 def listar_reservas_service(id_cancha, id_socio, estado, fecha_desde, fecha_hasta, limit, offset, base_url):
+    # Validar estado de la peticion
+    if estado is not None:
+        error_estado = validar_estado(estado)
+        if error_estado is not None:
+            return {"error": error_estado}, 400
+    
     # obtener la lista y el conteo de BD
     reservas_db = listar_reservas(id_cancha, id_socio, estado, fecha_desde, fecha_hasta, limit, offset)
     total_registros = contar_reservas(id_cancha, id_socio, estado, fecha_desde, fecha_hasta)
