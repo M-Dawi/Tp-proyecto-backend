@@ -41,12 +41,12 @@ def obtener_bloqueos_service(filtros, base_url):
     offset = filtros["offset"]
 
     try:
-     total = contar_bloqueos(id_cancha, fecha)
+     filas = listar_bloqueos(id_cancha, fecha, limit, offset)
 
      if not filas:
          return "", 204
 
-     filas = listar_bloqueos(id_cancha, fecha, limit, offset)
+     total = contar_bloqueos(id_cancha, fecha)
 
      bloqueos = []
      for fila in filas:
