@@ -1,9 +1,10 @@
 from flask import Blueprint, request, jsonify  # type: ignore[reportMissingImports]
 from src.services.canchas_service import (
     listar_canchas, 
-    crear_canchas, 
+    crear_canchas,
     obtener_cancha, 
     actualizar_cancha,
+    eliminar_cancha,
     listar_canchas_disponibles
 )
 canchas_bp = Blueprint('canchas',__name__)
