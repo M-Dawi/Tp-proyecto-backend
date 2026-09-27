@@ -17,9 +17,10 @@ def get_canchas():
         offset = int(request.args.get('offset', 0))
     except (TypeError, ValueError):
         return jsonify({"error": "limit y offset deben ser enteros"}), 400
-
+    
     resultado, codigo = listar_canchas(limit, offset, request.args, request.base_url)
-
+    return jsonify(resultado), codigo
+    
 @canchas_bp.route('/canchas/<int:cancha_id>', methods=['DELETE'])
 def delete_cancha(cancha_id):
     resultado, codigo = eliminar_cancha(cancha_id)
@@ -55,18 +56,13 @@ def patch_cancha(cancha_id):
     resultado, codigo = actualizar_cancha(cancha_id, datos)
     return jsonify(resultado), codigo
 
-@canchas_bp.route('/canchas/<int:cancha_id>', methods=['DELETE'])
-def delete_cancha(cancha_id):
-    resultado, codigo = eliminar_cancha(cancha_id)
-    return jsonify(resultado), codigo
-
 @canchas_bp.route('/canchas/disponibles', methods=['GET'])
 def get_canchas_disponibles():
     try:
-        limit = int(request.args.get('_limit', 10))
-        offset = int(request.args.get('_offset', 0))
+        limit = int(request.args.get('limit', 10))
+        offset = int(request.args.get('offset', 0))
     except (TypeError, ValueError):
-        return jsonify({"error": "_limit y _offset deben ser enteros"}), 400
+        return jsonify({"error": "limit y offset deben ser enteros"}), 400
 
     resultado, codigo = listar_canchas_disponibles(
         fecha=request.args.get('fecha'),
