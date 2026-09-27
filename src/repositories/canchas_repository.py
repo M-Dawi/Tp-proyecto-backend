@@ -31,7 +31,7 @@ def obtener_canchas(
         query += " AND activa = %s"
         params.append(activa)
 
-    query += " LIMIT %s OFFSET %s"
+    query += " ORDER BY id ASC LIMIT %s OFFSET %s"
     params.extend([limit, offset])
 
     cursor.execute(query, tuple(params))
@@ -75,7 +75,7 @@ def crear_cancha(id_deporte, nombre, precio_hora, techada, activa):
     """
     cursor.execute(query, (id_deporte, nombre, precio_hora, techada, activa))
     nuevo_id = cursor.lastrowid
-    
+
     conn.commit()
     cursor.close()
     conn.close()
@@ -170,6 +170,36 @@ def obtener_canchas_disponibles(fecha, hora_inicio, hora_fin,
 
     return canchas
 
+def contar_canchas(id_deporte=None, nombre=None, techada=None, activa=None):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    query = "SELECT COUNT(*) FROM canchas WHERE 1=1"
+    params = []
+
+    if id_deporte is not None:
+        query += " AND id_deporte = %s"
+        params.append(id_deporte)
+
+    if nombre is not None:
+        query += " AND LOWER(nombre) LIKE LOWER(%s)"
+        params.append(f"%{nombre}%")
+
+    if techada is not None:
+        query += " AND techada = %s"
+        params.append(techada)
+
+    if activa is not None:
+        query += " AND activa = %s"
+        params.append(activa)
+
+    cursor.execute(query, tuple(params))
+    total = cursor.fetchone()[0]
+
+    cursor.close()
+    conn.close()
+
+    return total
 
 def contar_canchas_disponibles(fecha, hora_inicio, hora_fin,
                                id_deporte=None, techada=None):
@@ -206,3 +236,4 @@ def contar_canchas_disponibles(fecha, hora_inicio, hora_fin,
     conn.close()
 
     return total
+

@@ -12,12 +12,13 @@ canchas_bp = Blueprint('canchas',__name__)
 @canchas_bp.route('/canchas', methods=['GET'])
 def get_canchas():
 
+    try:
+        limit = int(request.args.get('_limit', 10))
+        offset = int(request.args.get('_offset', 0))
+    except (TypeError, ValueError):
+        return jsonify({"error": "_limit y _offset deben ser enteros"}), 400
 
-    limit = int(request.args.get('_limit', 10))
-    offset = int(request.args.get('_offset', 0))
-
-
-    resultado, codigo = listar_canchas(limit, offset)
+    resultado, codigo = listar_canchas(limit, offset, request.args, request.base_url)
 
     return jsonify(resultado), codigo
 
@@ -56,8 +57,11 @@ def delete_cancha(cancha_id):
 
 @canchas_bp.route('/canchas/disponibles', methods=['GET'])
 def get_canchas_disponibles():
-    limit = int(request.args.get('_limit', 10))
-    offset = int(request.args.get('_offset', 0))
+    try:
+        limit = int(request.args.get('_limit', 10))
+        offset = int(request.args.get('_offset', 0))
+    except (TypeError, ValueError):
+        return jsonify({"error": "_limit y _offset deben ser enteros"}), 400
 
     resultado, codigo = listar_canchas_disponibles(
         fecha=request.args.get('fecha'),
