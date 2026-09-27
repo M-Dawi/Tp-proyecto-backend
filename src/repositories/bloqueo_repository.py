@@ -6,31 +6,29 @@ def cancha_existe(conn, cancha_id):
     cursor.execute("SELECT id FROM canchas WHERE id = %s", (cancha_id,))
     result = cursor.fetchone() is not None
     cursor.close()
-    return result 
+    return result
 
-def crear_bloqueo(conn, cancha_id, fecha_inicio, fecha_fin):
-    cursor = conn.cursor()
-    
-    if reserva:
+
+def crear_bloqueo(cancha_id, fecha, hora_inicio, hora_fin, motivo):
+    conexion = None
+    try:
+        conexion = get_db_connection()
+        cursor = conexion.cursor()
+        cursor.execute(
+            "INSERT INTO bloqueos (id_cancha, fecha, hora_inicio, hora_fin, motivo) VALUES (%s, %s, %s, %s, %s)",
+            (cancha_id, fecha, hora_inicio, hora_fin, motivo)
+        )
+        conexion.commit()
+        nuevo_id = cursor.lastrowid
         cursor.close()
-        return {'tipo': 'reserva', 'id': reserva['id']}
-        cursor.excute("SELECT id FROM reservas WHERE cancha_id = %s AND fecha_inicio < %s AND fecha_fin > %s", (cancha_id, fecha_fin, fecha_inicio))
-    bloqueo = cursor.fetchone()
-    cursor.close()
-    return {'tipo': 'bloqueo', 'id': bloqueo['id']} if bloqueo else None
+        conexion.close()
+        return obtener_bloqueo_por_id(nuevo_id)
+    except Exception as e:
+        print(f"Error de conexión al crear bloqueo: {e}")
+        if conexion is not None:
+            conexion.close()
+        return None
 
-def insertar_bloqueo(conn, cancha_id, fecha_inicio, fecha_fin):
-    cursor = conn.cursor()
-    cursor.execute(
-        "INSERT INTO bloqueos (cancha_id, fecha_inicio, fecha_fin) VALUES (%s, %s, %s)",
-        (cancha_id, fecha_inicio, fecha_fin)
-    )
-    conn.commit()
-    bloqueo_id = cursor.lastrowid
-    cursor.close()
-    return bloqueo_id
-
-    
 
 def obtener_bloqueo_por_id(bloqueo_id):
     conexion = None
@@ -48,6 +46,7 @@ def obtener_bloqueo_por_id(bloqueo_id):
             conexion.close()
         return None
 
+
 def eliminar_bloqueo(bloqueo_id):
     conexion = None
     try:
@@ -64,57 +63,45 @@ def eliminar_bloqueo(bloqueo_id):
             conexion.close()
         return False
 
+
 def contar_bloqueos(id_cancha=None, fecha=None):
     conn = get_db_connection()
     cursor = conn.cursor()
-
-    filtros = []
-    valores = []
-
+    filtros, valores = [], []
     if id_cancha is not None:
         filtros.append("id_cancha = %s")
         valores.append(id_cancha)
     if fecha is not None:
         filtros.append("fecha = %s")
         valores.append(fecha)
-
     query = "SELECT COUNT(*) FROM bloqueos"
     if filtros:
         query += " WHERE " + " AND ".join(filtros)
-
     cursor.execute(query, tuple(valores))
-    total_bloqueos = cursor.fetchone()[0]
-
+    total = cursor.fetchone()[0]
     cursor.close()
     conn.close()
-    return total_bloqueos
+    return total
+
 
 def listar_bloqueos(id_cancha=None, fecha=None, limit=10, offset=0):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
-
-    filtros = []
-    valores = []
-
+    filtros, valores = [], []
     if id_cancha is not None:
         filtros.append("id_cancha = %s")
         valores.append(id_cancha)
     if fecha is not None:
         filtros.append("fecha = %s")
         valores.append(fecha)
-
     query = "SELECT * FROM bloqueos"
-
     if filtros:
         query += " WHERE " + " AND ".join(filtros)
-
     query += " ORDER BY id ASC LIMIT %s OFFSET %s"
-
     valores.append(limit)
     valores.append(offset)
-
     cursor.execute(query, tuple(valores))
     bloqueos = cursor.fetchall()
     cursor.close()
     conn.close()
-    return bloqueos   
+    return bloqueos

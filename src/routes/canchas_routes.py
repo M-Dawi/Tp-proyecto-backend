@@ -20,6 +20,11 @@ def get_canchas():
 
     resultado, codigo = listar_canchas(limit, offset, request.args, request.base_url)
 
+@canchas_bp.route('/canchas/<int:cancha_id>', methods=['DELETE'])
+def delete_cancha(cancha_id):
+    resultado, codigo = eliminar_cancha(cancha_id)
+    if codigo == 204:
+        return "", 204
     return jsonify(resultado), codigo
 
 @canchas_bp.route('/canchas', methods=['POST'])

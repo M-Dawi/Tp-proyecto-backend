@@ -1,10 +1,11 @@
 from src.repositories.bloqueo_repository import (
-    obtener_bloqueo_por_id, 
+    obtener_bloqueo_por_id,
     eliminar_bloqueo,
-    contar_bloqueos, 
-    listar_bloqueos , 
-    crear_bloqueo
+    contar_bloqueos,
+    listar_bloqueos,
+    crear_bloqueo,
 )
+from src.repositories.canchas_repository import obtener_cancha_por_id
 from src.services.errores import armar_error
 
 def eliminar_bloqueo_service(bloqueo_id):
@@ -104,14 +105,17 @@ def _armar_links(base_url, id_cancha, fecha, limit, offset, total):
     return links
 
 def crear_bloqueo_service(datos):
+    cancha = obtener_cancha_por_id(datos["id_cancha"])
+    if cancha is None:
+        return armar_error("NOT_FOUND", "Recurso no encontrado", "La cancha no existe", 404)
+
     try:
         bloqueo = crear_bloqueo(
-            datos["id_cancha"],
-            datos["fecha"],
-            datos["hora_inicio"],
-            datos["hora_fin"],
-            datos["motivo"],
+            datos["id_cancha"], datos["fecha"], datos["hora_inicio"], datos["hora_fin"], datos["motivo"],
         )
+
+        if bloqueo is None:
+            return armar_error("INTERNAL_SERVER_ERROR", "Error interno del servidor", "No se pudo crear el bloqueo", 500)
 
         return {
             "id": int(bloqueo["id"]),
@@ -124,9 +128,4 @@ def crear_bloqueo_service(datos):
 
     except Exception as e:
         print("Error:", e)
-        return armar_error(
-            "INTERNAL_SERVER_ERROR",
-            "Error interno del servidor",
-            "Ocurrió un error inesperado",
-            500
-        )
+        return armar_error("INTERNAL_SERVER_ERROR", "Error interno del servidor", "Ocurrió un error inesperado", 500)

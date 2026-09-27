@@ -1,31 +1,25 @@
 from src.repositories.canchas_repository import (
-    obtener_canchas, 
-    crear_cancha as crear_canchas_repo, 
+    obtener_canchas,
+    crear_cancha as crear_canchas_repo,
     eliminar_cancha as eliminar_cancha_repo,
     obtener_cancha_por_id,
     actualizar_cancha as repo_actualizar_cancha,
     obtener_canchas_disponibles,
     contar_canchas_disponibles,
 )
+from src.repositories.reservas_repository import contar_reservas
 from src.validators import canchas_validators
 
 
 def listar_canchas(limit, offset):
-
-    if limit < 1 or limit >100:
+    if limit < 1 or limit > 100:
         return {"error": "El límite debe estar entre 1 y 100"}, 400
-
     if offset < 0:
         return {"error": "El offset no puede ser negativo"}, 400
 
-
     canchas = obtener_canchas(limit=limit, offset=offset)
-    
-    return{
-        "canchas": canchas,
-        "limit": limit,
-        "offset": offset
-     }, 200
+    return {"canchas": canchas, "limit": limit, "offset": offset}, 200
+
 
 def crear_canchas(datos):
     if datos is None:
@@ -37,7 +31,7 @@ def crear_canchas(datos):
     techada = datos.get("techada", False)
     activa = datos.get("activa", True)
 
-    if not nombre :
+    if not nombre:
         return {"error": "El nombre de la cancha es obligatorio"}, 400
     if id_deporte is None:
         return {"error": "El 'id_deporte' es obligatorio"}, 400
@@ -47,16 +41,13 @@ def crear_canchas(datos):
         return {"error": "El 'precio_hora' debe ser un entero mayor a cero"}, 400
 
     cancha = crear_canchas_repo(id_deporte, nombre, precio_hora, techada, activa)
-
     return cancha, 201
-    
+
 
 def obtener_cancha(cancha_id):
     cancha = obtener_cancha_por_id(cancha_id)
-
     if cancha is None:
         return {"error": "Cancha no encontrada"}, 404
-
     return cancha, 200
 
 
@@ -75,16 +66,18 @@ def actualizar_cancha(cancha_id, datos):
 
     return repo_actualizar_cancha(cancha_id, limpio), 200
 
+
 def eliminar_cancha(cancha_id):
     cancha = obtener_cancha_por_id(cancha_id)
     if cancha is None:
         return {"error": "Cancha no encontrada"}, 404
-    
-    eliminada = eliminar_cancha_repo(cancha_id)
-    if not eliminada:
-        return {"error": "No se pudo eliminar la cancha con reserva"}, 500
-    
-    return {"Cancha eliminada exitosamente"}, 200
+
+    total_reservas = contar_reservas(id_cancha=cancha_id)
+    if total_reservas > 0:
+        return {"error": "No se puede eliminar una cancha con reservas asociadas"}, 409
+
+    eliminar_cancha_repo(cancha_id)
+    return None, 204
 
 
 def listar_canchas_disponibles(fecha, hora_inicio, hora_fin,
@@ -104,26 +97,12 @@ def listar_canchas_disponibles(fecha, hora_inicio, hora_fin,
     techada_bool = (techada == "true") if techada in ("true", "false") else None
 
     canchas = obtener_canchas_disponibles(
-        fecha=fecha,
-        hora_inicio=hora_inicio,
-        hora_fin=hora_fin,
-        id_deporte=id_deporte_int,
-        techada=techada_bool,
-        limit=limit,
-        offset=offset,
+        fecha=fecha, hora_inicio=hora_inicio, hora_fin=hora_fin,
+        id_deporte=id_deporte_int, techada=techada_bool, limit=limit, offset=offset,
     )
-
     total = contar_canchas_disponibles(
-        fecha=fecha,
-        hora_inicio=hora_inicio,
-        hora_fin=hora_fin,
-        id_deporte=id_deporte_int,
-        techada=techada_bool,
+        fecha=fecha, hora_inicio=hora_inicio, hora_fin=hora_fin,
+        id_deporte=id_deporte_int, techada=techada_bool,
     )
 
-    return {
-        "canchas": canchas,
-        "limit": limit,
-        "offset": offset,
-        "total": total,
-    }, 200
+    return {"canchas": canchas, "limit": limit, "offset": offset, "total": total}, 200
