@@ -132,6 +132,9 @@ def listar_reservas_service(id_cancha, id_socio, estado, fecha_desde, fecha_hast
     
     # obtener la lista y el conteo de BD
     reservas_db = listar_reservas(id_cancha, id_socio, estado, fecha_desde, fecha_hasta, limit, offset)
+    if not reservas_db:
+        return "", 204
+
     total_registros = contar_reservas(id_cancha, id_socio, estado, fecha_desde, fecha_hasta)
 
     reservas = []
