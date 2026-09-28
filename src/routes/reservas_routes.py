@@ -1,8 +1,13 @@
 from flask import Blueprint, jsonify, request
 from src.services.reservas_service import consultar_reserva_por_id, registrar_reserva, cambiar_estado, listar_reservas_service, registrar_reservas_recurrentes
 from src.validators.reservas_validators import validar_cuerpo_cambio_estado, validar_parametros_paginacion
+from src.services.errores import armar_error
 
 reservas_bp = Blueprint('reservas', __name__)
+
+def _bad_request(descripcion):
+    cuerpo, status = armar_error("BAD_REQUEST", "Solicitud inválida", descripcion, 400)
+    return jsonify(cuerpo), status
 
 # Listar reservas ------------------
 @reservas_bp.route('/reservas', methods=['GET'])
@@ -20,7 +25,7 @@ def obtener_reservas():
 
     error_paginacion = validar_parametros_paginacion(limit, offset)
     if error_paginacion:
-        return jsonify(error_paginacion), 400
+        return _bad_request(error_paginacion)
   
     resultado, status_code = listar_reservas_service(
         id_cancha=id_cancha,
@@ -40,7 +45,8 @@ def obtener_reservas():
 def obtener_reserva(id):
     reserva = consultar_reserva_por_id(id)
     if not reserva:
-        return jsonify({"mensaje": "Reserva no encontrada"}), 404
+        cuerpo, status = armar_error("NOT_FOUND", "Recurso no encontrado", "La reserva no existe", 404)
+        return jsonify(cuerpo), status
 
     return jsonify(reserva), 200
 
@@ -49,8 +55,8 @@ def obtener_reserva(id):
 def crear_nueva_reserva():
     datos = request.get_json(silent=True)
 
-    if not datos:
-        return jsonify({"error": "Debe enviar un cuerpo en formato JSON"}), 400
+    if not datos or not isinstance(datos, dict):
+        return _bad_request("Debe enviar un cuerpo en formato JSON")
 
     resultado, status_code = registrar_reserva(datos)
 
@@ -63,7 +69,7 @@ def cambiar_estado_reserva(id):
 
     error_cuerpo = validar_cuerpo_cambio_estado(datos)
     if error_cuerpo is not None:
-        return jsonify({"error": error_cuerpo}), 400
+        return _bad_request(error_cuerpo)
 
     resultado, status_code = cambiar_estado(id, datos["estado"])
 
@@ -76,8 +82,8 @@ def cambiar_estado_reserva(id):
 @reservas_bp.route('/reservas/recurrentes', methods=['POST'])
 def crear_reservas_recurrentes():
     datos = request.get_json(silent=True)
-    if not datos:
-        return jsonify({"error": "Debe enviar un cuerpo en formato JSON"}), 400
+    if not datos or not isinstance(datos, dict):
+        return _bad_request("Debe enviar un cuerpo en formato JSON")
 
     resultado, status_code = registrar_reservas_recurrentes(datos)
     return jsonify(resultado), status_code
