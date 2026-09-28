@@ -68,7 +68,7 @@ def listar_canchas(limit, offset, id_deporte=None, nombre=None, techada=None, ac
 
 
 def crear_canchas(datos):
-    if isinstance(datos, dict):
+    if not isinstance(datos, dict):
         return armar_error("BAD_REQUEST", "Solicitud inválida", "No se proporcionaron datos para crear la cancha", 400)
 
     nombre = datos.get("nombre")
@@ -77,7 +77,7 @@ def crear_canchas(datos):
     techada = datos.get("techada", False)
     activa = datos.get("activa", True)
 
-    if isinstance(nombre, str):
+    if not isinstance(nombre, str) or not nombre.strip():
         return armar_error("BAD_REQUEST", "Solicitud inválida", "El nombre de la cancha es obligatorio", 400)
     try:
         id_deporte = int(id_deporte)
