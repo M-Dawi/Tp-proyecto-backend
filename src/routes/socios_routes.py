@@ -21,7 +21,7 @@ def get_socios():
     nombre = request.args.get("nombre", type=str)
     activo = request.args.get("activo")
         
-    respuesta, codigo = obtener_socios_service(limit, offset, nombre, activo)
+    respuesta, codigo = obtener_socios_service(limit, offset, nombre, activo, request.base_url)
     return jsonify(respuesta), codigo
 
 @socios_bp.route("/socios/<int:socio_id>", methods=["GET"])

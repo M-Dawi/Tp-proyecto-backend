@@ -116,7 +116,7 @@ def actualizar_socio_service(socio_id, cuerpo):
             500
         )
 
-def obtener_socios_service(limit, offset, nombre, activo):
+def obtener_socios_service(limit, offset, nombre, activo, base_url):
 
     if activo is not None:
         if activo.lower() not in ["true", "false"]:          #si el parámetro activo no es true o false, devuelve un error 400
@@ -136,34 +136,27 @@ def obtener_socios_service(limit, offset, nombre, activo):
             return "", 204
                 
         total = contar_socios(nombre, activo)  # Función desde repository
-        
 
-        prev_offset = max(0, offset - limit)
-        next_offset = offset + limit 
-        last_offset = ((total - 1) // limit) * limit 
+        def construir(nuevo_offset):
+            return{"href": f"{base_url}?_offset={nuevo_offset}&_limit={limit}"}
+        last_offset = max(0,((total - 1) // limit) * limit)
+
+        links = {
+            "_fist": construir(0),
+            "_last": construir(last_offset)
+        }
+
+        if offset > 0: 
+            links["_prev"] = construir(max(0, offset - limit))
+
+        if offset + limit < total:
+            links["_next"] = construir(offset + limit)
 
         respuesta = {
             "socios": socios,
-            "_links": {
-                "_first": {
-                    "href": f"http://localhost:5000/socios?_offset=0&_limit={limit}",
-                },
-                "_prev": {
-                    "href": f"http://localhost:5000/socios?_offset={prev_offset}&_limit={limit}",
-                
-                },
-                "_next": {
-                    "href": f"http://localhost:5000/socios?_offset={next_offset}&_limit={limit}",
-                },
-                "_last": {
-                    "href": f"http://localhost:5000/socios?_offset={last_offset}&_limit={limit}",
-                }
-
-            }
+            "_links": links
         }
-
-
-       
+        
         return respuesta, 200                        #si encuentra socios, devuelve la lista de socios y un código 200
     
     except Exception as e:
