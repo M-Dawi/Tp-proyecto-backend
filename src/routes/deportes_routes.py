@@ -8,4 +8,4 @@ def get_deportes():
     deportes = obtener_deportes()
     if not deportes:
         return "", 204
-    return jsonify({"deportes": deportes}),
+    return jsonify({"deportes": deportes}), 200
