@@ -23,7 +23,7 @@ def get_canchas():
         limit = int(request.args.get('_limit', 10))
         offset = int(request.args.get('_offset', 0))
     except (TypeError, ValueError):
-        return _bad_request("error": "_limit y _offset deben ser enteros")
+        return _bad_request("_limit y _offset deben ser enteros")
 
     resultado, codigo = listar_canchas(
         limit, offset,
@@ -52,7 +52,7 @@ def post_canchas():
     datos = request.get_json(silent=True)
 
     if not isinstance(datos, dict):
-        return _bad_request("error": 'No se proporcionaron datos')
+        return _bad_request('No se proporcionaron datos')
     resultado, codigo = crear_canchas(datos)
 
     return jsonify(resultado), codigo
@@ -69,7 +69,7 @@ def patch_cancha(cancha_id):
     datos = request.get_json(silent=True)
 
     if not isinstance(datos, dict):
-        return _bad_request("error": 'No se proporcionaron datos')
+        return _bad_request('No se proporcionaron datos')
 
     resultado, codigo = actualizar_cancha(cancha_id, datos)
 
@@ -84,7 +84,7 @@ def get_canchas_disponibles():
         limit = int(request.args.get('_limit', 10))
         offset = int(request.args.get('_offset', 0))
     except (TypeError, ValueError):
-        return _bad_request("error": "_limit y _offset deben ser enteros")
+        return _bad_request("_limit y _offset deben ser enteros")
 
     resultado, codigo = listar_canchas_disponibles(
         fecha=request.args.get('fecha'),
