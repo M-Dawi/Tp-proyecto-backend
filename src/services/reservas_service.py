@@ -179,6 +179,9 @@ def listar_reservas_service(id_cancha, id_socio, estado, fecha_desde, fecha_hast
     return respuesta, 200
 
 def registrar_reservas_recurrentes(datos):
+    error_campos = validar_campos_creacion(datos)
+    if error_campos is not None:
+        return armar_error("BAD_REQUEST", "Solicitud inválida", error_campos, 400)
     # Validar formato
     cant_semanas = datos.get('cantidad_semanas')
     if type(cant_semanas) is not int or cant_semanas < 2 or cant_semanas > 12:
