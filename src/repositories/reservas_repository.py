@@ -4,7 +4,6 @@ from datetime import datetime
 def obtener_reserva_por_id(reserva_id):
     conexion = None
     try:
-        # Selecciona las reservas que haya en la base de datos
         conexion = get_db_connection()
         cursor = conexion.cursor(dictionary=True)
 
@@ -14,6 +13,13 @@ def obtener_reserva_por_id(reserva_id):
 
         cursor.close()
         conexion.close()
+
+        if reserva:
+            if 'precio_hora' in reserva and reserva['precio_hora'] is not None:
+                reserva['precio_hora'] = float(reserva['precio_hora'])
+            if 'precio_total' in reserva and reserva['precio_total'] is not None:
+                reserva['precio_total'] = float(reserva['precio_total'])
+
         return reserva
     except Exception as e:
         print(f"Error de conexión al buscar reserva {reserva_id}: {e}")
@@ -21,14 +27,15 @@ def obtener_reserva_por_id(reserva_id):
             conexion.close()
         return None
 
-def buscar_solapamientos(columna, id_col, inicio,fin):
-    # if columna not in ('id_cancha', 'id_socio'):
-    #  return None
+def buscar_solapamientos(columna, id_col, inicio, fin):
     conexion = None
     try:
-        # Devuelve una reserva confirmada que se pueda solapar con el horario (por cancha o socio), devuelve None si no hay
         conexion = get_db_connection()
         cursor = conexion.cursor(dictionary=True)
+
+        inicio_str = inicio.strftime("%Y-%m-%d %H:%M:%S")
+        fin_str = fin.strftime("%Y-%m-%d %H:%M:%S")
+
         query = f"""
         SELECT * FROM reservas  
         WHERE {columna} = %s
@@ -36,8 +43,9 @@ def buscar_solapamientos(columna, id_col, inicio,fin):
             AND fecha_hora_inicio < %s
             AND fecha_hora_fin > %s
         """
-        cursor.execute(query, (id_col, fin, inicio))
+        cursor.execute(query, (id_col, fin_str, inicio_str))
         solapamiento = cursor.fetchone()
+
         cursor.close()
         conexion.close()
         return solapamiento
@@ -45,20 +53,12 @@ def buscar_solapamientos(columna, id_col, inicio,fin):
         print(f"error: {e}")
         if conexion is not None:
             conexion.close()
-        return None    
+        return None 
 
 def crear_reserva(datos, precio_hora, precio_total):
-    # Crea una reserva en la base de datos
     conexion = get_db_connection()
     cursor = conexion.cursor()
 
-    dt_inicio = datetime.fromisoformat(datos['fecha_hora_inicio'])
-    dt_fin = datetime.fromisoformat(datos['fecha_hora_fin'])
-
-    fecha = dt_inicio.strftime("%Y-%m-%d")
-    hora_inicio = dt_inicio.strftime("%H:%M:%S")
-    hora_fin = dt_fin.strftime("%H:%M:%S")
-    
     query = """
         INSERT INTO reservas (id_cancha, id_socio, fecha_hora_inicio, fecha_hora_fin, precio_hora, precio_total, estado)
         VALUES (%s, %s, %s, %s, %s, %s, %s)
@@ -66,17 +66,18 @@ def crear_reserva(datos, precio_hora, precio_total):
     valores = (
         datos['id_cancha'],
         datos['id_socio'],
-        fecha,
-        hora_inicio,
-        hora_fin,
+        datos['fecha_hora_inicio'],
+        datos['fecha_hora_fin'],
+        precio_hora,
         precio_total,
         datos.get('estado', 'confirmada')
     )
+
     cursor.execute(query, valores)
     conexion.commit()
-    
+
     nuevo_id = cursor.lastrowid
-    
+
     cursor.close()
     conexion.close()
     return nuevo_id
