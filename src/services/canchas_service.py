@@ -67,7 +67,7 @@ def listar_canchas(limit, offset, id_deporte=None, nombre=None, techada=None, ac
 
 
 def crear_canchas(datos):
-    if datos is None:
+    if isinstance(datos, dict):
         return {"error": "No se proporcionaron datos para crear la cancha"}, 400
 
     nombre = datos.get("nombre")
@@ -76,8 +76,12 @@ def crear_canchas(datos):
     techada = datos.get("techada", False)
     activa = datos.get("activa", True)
 
-    if not nombre:
+    if isinstance(nombre, str):
         return {"error": "El nombre de la cancha es obligatorio"}, 400
+    try:
+        id_deporte = int(id_deporte)
+    except (TypeError, ValueError):
+        return {"error": "El 'id_deporte'debe ser un número entero"}, 400
     if id_deporte is None:
         return {"error": "El 'id_deporte' es obligatorio"}, 400
     if precio_hora is None:
@@ -89,6 +93,8 @@ def crear_canchas(datos):
         return {"error": "El deporte indicado no existe"}, 404
 
     cancha = crear_canchas_repo(id_deporte, nombre, precio_hora, techada, activa)
+    if cancha is None:
+        return {"error": "No se pudo crear la cancha"}, 500
     return cancha, 201
 
 
@@ -103,6 +109,8 @@ def actualizar_cancha(cancha_id, datos):
     cancha = obtener_cancha_por_id(cancha_id)
     if cancha is None:
         return {"error": "Cancha no encontrada"}, 404
+    if not isisntance(datos, dict):
+        return {"error": "El cuerpo de la solicitud, debe ser un objeto JSON"}, 400
 
     error = canchas_validators.validar_campos_actualizacion(datos)
     if error:
@@ -110,11 +118,15 @@ def actualizar_cancha(cancha_id, datos):
 
     limpio = dict(datos)
     if "nombre" in limpio:
+        if not isinstance(limpio["nombre"], str) or not limpio["nombre"].strip():
+            return {"error": "El nombre debe ser un texto no vacío"}, 400
         limpio["nombre"] = limpio["nombre"].strip()
-
-    return repo_actualizar_cancha(cancha_id, limpio), 200
-
-
+        
+    resultado = repo_actualizar_cancha(cancha_id, limpio)
+    
+    if resultado is None:
+        return {"error": "No se pudo actualizar la cancha"}, 500
+    return resultado, 200
 def eliminar_cancha(cancha_id):
     cancha = obtener_cancha_por_id(cancha_id)
     if cancha is None:
