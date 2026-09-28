@@ -1,7 +1,7 @@
 def validar_datos_crear_socio(cuerpo):
 
     if not cuerpo or not isinstance(cuerpo, dict):
-        return "El cuerpo debe ser un objeto JSON (diccionario) no vacío."
+        return "El cuerpo debe ser un objeto JSON (diccionario) con exactamente dos campos"
     
     campos_recibidos = set(cuerpo.keys())
     campos_permitidos = {"nombre", "email"}
