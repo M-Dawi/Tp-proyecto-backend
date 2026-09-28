@@ -11,37 +11,38 @@ def obtener_canchas(
     
     conn = get_db_connection()
     try:
-         cursor = conn.cursor(dictionary=True)
-         query = "SELECT * FROM canchas WHERE 1=1"
-         params = []
+        cursor = conn.cursor(dictionary=True)
+        query = "SELECT * FROM canchas WHERE 1=1"
+        params = []
 
-    if id_deporte is not None:
-        query += " AND id_deporte = %s"
-        params.append(id_deporte)
+        if id_deporte is not None:
+            query += " AND id_deporte = %s"
+            params.append(id_deporte)
 
-    if nombre is not None:
-        query += " AND LOWER(nombre) LIKE LOWER (%s)"
-        params.append(f"%{nombre}%")
+        if nombre is not None:
+            query += " AND LOWER(nombre) LIKE LOWER (%s)"
+            params.append(f"%{nombre}%")
 
-    if techada is not None:
-        query += " AND techada = %s"
-        params.append(techada)
+        if techada is not None:
+            query += " AND techada = %s"
+            params.append(techada)
 
-    if activa is not None:
-        query += " AND activa = %s"
-        params.append(activa)
+        if activa is not None:
+            query += " AND activa = %s"
+            params.append(activa)
 
-    query += " ORDER BY id ASC LIMIT %s OFFSET %s"
-    params.extend([limit, offset])
+        query += " ORDER BY id ASC LIMIT %s OFFSET %s"
+        params.extend([limit, offset])
 
-    cursor.execute(query, tuple(params))
-    canchas = cursor.fetchall()
+        cursor.execute(query, tuple(params))
+        canchas = cursor.fetchall()
 
-    cursor.close()
-    conn.close()
-    return canchas
-finally:
-    conn.close() 
+        cursor.close()
+        conn.close()
+        return canchas
+
+    finally:
+        conn.close() 
 
 def obtener_cancha_por_id(cancha_id):
     conexion = None
@@ -83,10 +84,10 @@ def crear_cancha(id_deporte, nombre, precio_hora, techada, activa):
         conn.close()
 
         return obtener_cancha_por_id(nuevo_id)
-   except Exception as e:
+    except Exception as e:
         print(f"Error al crear la cancha: {e}")
         if conn is not None:
-                conn.close()
+            conn.close()
         return None       
 
 
@@ -104,22 +105,23 @@ def actualizar_cancha(cancha_id, campos):
     valores = list(campos.values()) + [cancha_id]
     conn = None
     try:
-    conn = get_db_connection()
-    cursor = conn.cursor()
+        conn = get_db_connection()
+        cursor = conn.cursor()
 
-    query = f"UPDATE canchas SET {sets} WHERE id = %s"
-    cursor.execute(query, tuple(valores))
+        query = f"UPDATE canchas SET {sets} WHERE id = %s"
+        cursor.execute(query, tuple(valores))
 
-    conn.commit()
-    cursor.close()
-    conn.close()
-
-    return obtener_cancha_por_id(cancha_id)
-except Exception as e:
-    print(f"Error al actualizar la cancha {cancha_id}: {e}")
-    if conn is not None:
+        conn.commit()
+        cursor.close()
         conn.close()
-    return None
+
+        return obtener_cancha_por_id(cancha_id)
+
+    except Exception as e:
+        print(f"Error al actualizar la cancha {cancha_id}: {e}")
+        if conn is not None:
+            conn.close()
+        return None
 
 def eliminar_cancha(cancha_id):
     conn = None
@@ -135,11 +137,11 @@ def eliminar_cancha(cancha_id):
         conn.close()
 
         return True
-except Exception as e:
-    print(f"Error al eliminar la cancha {cancha_id}: {e}")
-    if conn is not None:
-        conn.close()
-    return False
+    except Exception as e:
+        print(f"Error al eliminar la cancha {cancha_id}: {e}")
+        if conn is not None:
+            conn.close()
+        return False
 
 def obtener_canchas_disponibles(fecha, hora_inicio, hora_fin,
                                 id_deporte=None, techada=None,
@@ -162,27 +164,30 @@ def obtener_canchas_disponibles(fecha, hora_inicio, hora_fin,
                     AND r.fecha_hora_fin    > %s
                )
         """
-# fecha_hora_fin del intervalo solicitado y fecha_hora_inicio
-params = [f"{fecha} {hora_fin}", f"{fecha} {hora_inicio}"]
+        # fecha_hora_fin del intervalo solicitado y fecha_hora_inicio
+        params = [f"{fecha} {hora_fin}", f"{fecha} {hora_inicio}"]
 
-    if id_deporte is not None:
-        query += " AND c.id_deporte = %s"
-        params.append(id_deporte)
+        if id_deporte is not None:
+            query += " AND c.id_deporte = %s"
+            params.append(id_deporte)
 
-    if techada is not None:
-        query += " AND c.techada = %s"
-        params.append(techada)
+        if techada is not None:
+            query += " AND c.techada = %s"
+            params.append(techada)
 
-    query += " ORDER BY c.id ASC LIMIT %s OFFSET %s"
-    params.extend([limit, offset])
+        query += " ORDER BY c.id ASC LIMIT %s OFFSET %s"
+        params.extend([limit, offset])
 
-    cursor.execute(query, tuple(params))
-    canchas = cursor.fetchall()
+        cursor.execute(query, tuple(params))
+        canchas = cursor.fetchall()
 
-    cursor.close()
-    conn.close()
+        cursor.close()
+        conn.close()
 
-    return canchas
+        return canchas
+
+    finally:
+        conn.close()
 
 def contar_canchas(id_deporte=None, nombre=None, techada=None, activa=None):
     conn = get_db_connection()
