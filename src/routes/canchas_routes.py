@@ -25,9 +25,17 @@ def get_canchas():
     except (TypeError, ValueError):
         return _bad_request("_limit y _offset deben ser enteros")
 
+    id_deporte = None
+    id_deporte_raw = request.args.get('id_deporte')
+    if id_deporte_raw is not None:
+        try:
+            id_deporte = int(id_deporte_raw)
+        except ValueError:
+            return _bad_request("El parámetro 'id_deporte' debe ser un entero")
+
     resultado, codigo = listar_canchas(
         limit, offset,
-        id_deporte=request.args.get('id_deporte', type=int),
+        id_deporte=id_deporte,
         nombre=request.args.get('nombre'),
         techada=request.args.get('techada'),
         activa=request.args.get('activa'),

@@ -60,10 +60,11 @@ def validar_disponibilidad(args):
 
     if "id_deporte" in args and args["id_deporte"]:
         try:
-            int(args["id_deporte"])
+            if int(args["id_deporte"]) < 1:
+                return "El parámetro 'id_deporte' debe ser un entero positivo."
         except (TypeError, ValueError):
             return "El parámetro 'id_deporte' debe ser un entero."
-
+            
     if args.get("techada") is not None and args["techada"] not in ("true", "false"):
         return "El parámetro 'techada' debe ser 'true' o 'false'."
 

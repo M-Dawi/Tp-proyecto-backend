@@ -23,12 +23,13 @@ def _armar_link(base_url, limit, offset, filtros):
     params.append(f"_offset={offset}")
     return {"href": f"{base_url}?{'&'.join(params)}"}
 
-
 def listar_canchas(limit, offset, id_deporte=None, nombre=None, techada=None, activa=None, base_url=None):
     if limit < 1 or limit > 100:
         return armar_error("BAD_REQUEST", "Solicitud inválida", "El límite debe estar entre 1 y 100", 400)
     if offset < 0:
         return armar_error("BAD_REQUEST", "Solicitud inválida", "El offset no puede ser negativo", 400)
+    if id_deporte is not None and id_deporte < 1:
+        return armar_error("BAD_REQUEST", "Solicitud inválida", "El parámetro 'id_deporte' debe ser un entero positivo", 400)
 
     techada_bool = None
     if techada is not None:
@@ -65,7 +66,6 @@ def listar_canchas(limit, offset, id_deporte=None, nombre=None, techada=None, ac
         _links["_next"] = _armar_link(base_url, limit, offset + limit, filtros)
 
     return {"canchas": canchas, "limit": limit, "offset": offset, "total": total, "_links": _links}, 200
-
 
 def crear_canchas(datos):
     if not isinstance(datos, dict):
