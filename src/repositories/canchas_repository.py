@@ -10,17 +10,17 @@ def obtener_canchas(
 ):
     
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-
-    query = "SELECT * FROM canchas WHERE 1=1"
-    params = []
+    try:
+         cursor = conn.cursor(dictionary=True)
+         query = "SELECT * FROM canchas WHERE 1=1"
+         params = []
 
     if id_deporte is not None:
         query += " AND id_deporte = %s"
         params.append(id_deporte)
 
     if nombre is not None:
-        query += " AND nombre LIKE %s"
+        query += " AND LOWER(nombre) LIKE LOWER (%s)"
         params.append(f"%{nombre}%")
 
     if techada is not None:
@@ -39,9 +39,9 @@ def obtener_canchas(
 
     cursor.close()
     conn.close()
-
     return canchas
-
+finally:
+    conn.close() 
 
 def obtener_cancha_por_id(cancha_id):
     conexion = None
@@ -66,21 +66,28 @@ def obtener_cancha_por_id(cancha_id):
 
 
 def crear_cancha(id_deporte, nombre, precio_hora, techada, activa):
-    conn = get_db_connection()
-    cursor = conn.cursor()
+    conn = None
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
 
-    query = """
-        INSERT INTO canchas (id_deporte, nombre, precio_hora, techada, activa)
-        VALUES (%s, %s, %s, %s, %s)
-    """
-    cursor.execute(query, (id_deporte, nombre, precio_hora, techada, activa))
+        query = """
+            INSERT INTO canchas (id_deporte, nombre, precio_hora, techada, activa)
+            VALUES (%s, %s, %s, %s, %s)
+        """
+        cursor.execute(query, (id_deporte, nombre, precio_hora, techada, activa))
 
-    conn.commit()
-    nuevo_id = cursor.lastrowid
-    cursor.close()
-    conn.close()
+        conn.commit()
+        nuevo_id = cursor.lastrowid
+        cursor.close()
+        conn.close()
 
-    return obtener_cancha_por_id(nuevo_id)
+        return obtener_cancha_por_id(nuevo_id)
+   except Exception as e:
+        print(f"Error al crear la cancha: {e}")
+        if conn is not None:
+                conn.close()
+        return None       
 
 
 def actualizar_cancha(cancha_id, campos):
@@ -95,7 +102,8 @@ def actualizar_cancha(cancha_id, campos):
 
     sets = ", ".join(f"{col} = %s" for col in campos.keys())
     valores = list(campos.values()) + [cancha_id]
-
+    conn = None
+    try:
     conn = get_db_connection()
     cursor = conn.cursor()
 
@@ -107,42 +115,55 @@ def actualizar_cancha(cancha_id, campos):
     conn.close()
 
     return obtener_cancha_por_id(cancha_id)
+except Exception as e:
+    print(f"Error al actualizar la cancha {cancha_id}: {e}")
+    if conn is not None:
+        conn.close()
+    return None
 
 def eliminar_cancha(cancha_id):
-    conn = get_db_connection()
-    cursor = conn.cursor()
+    conn = None
+    try:    
+        conn = get_db_connection()
+        cursor = conn.cursor()
 
-    query = "DELETE FROM canchas WHERE id = %s"
-    cursor.execute(query, (cancha_id,))
+        query = "DELETE FROM canchas WHERE id = %s"
+        cursor.execute(query, (cancha_id,))
 
-    conn.commit()
-    cursor.close()
-    conn.close()
+        conn.commit()
+        cursor.close()
+        conn.close()
 
-    return True
-
+        return True
+except Exception as e:
+    print(f"Error al eliminar la cancha {cancha_id}: {e}")
+    if conn is not None:
+        conn.close()
+    return False
 
 def obtener_canchas_disponibles(fecha, hora_inicio, hora_fin,
                                 id_deporte=None, techada=None,
                                 limit=10, offset=0):
+                                        
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-
-    query = """
-        SELECT c.*
-        FROM canchas c
-        WHERE c.activa = TRUE
-          AND NOT EXISTS (
-              SELECT 1
-              FROM reservas r
-              WHERE r.id_cancha = c.id
-                AND r.estado = 'confirmada'
-                AND r.fecha_hora_inicio < %s
-                AND r.fecha_hora_fin    > %s
-          )
-    """
-    # fecha_hora_fin del intervalo solicitado y fecha_hora_inicio
-    params = [f"{fecha} {hora_fin}", f"{fecha} {hora_inicio}"]
+    try:                                    
+        cursor = conn.cursor(dictionary=True)
+        
+        query = """
+            SELECT c.*
+            FROM canchas c
+            WHERE c.activa = TRUE
+              AND NOT EXISTS (
+                  SELECT 1
+                  FROM reservas r
+                  WHERE r.id_cancha = c.id
+                    AND r.estado = 'confirmada'
+                    AND r.fecha_hora_inicio < %s
+                    AND r.fecha_hora_fin    > %s
+               )
+        """
+# fecha_hora_fin del intervalo solicitado y fecha_hora_inicio
+params = [f"{fecha} {hora_fin}", f"{fecha} {hora_inicio}"]
 
     if id_deporte is not None:
         query += " AND c.id_deporte = %s"
