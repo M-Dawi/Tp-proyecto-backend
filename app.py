@@ -1,4 +1,5 @@
-from flask import Flask
+from flask import Flask, jsonify
+from src.services.errores import armar_error
 from src.routes.reservas_routes import reservas_bp
 from src.routes.socios_routes import socios_bp
 from src.routes.deportes_routes import deportes_bp
@@ -13,6 +14,11 @@ app.register_blueprint(socios_bp)
 app.register_blueprint(deportes_bp)
 app.register_blueprint(canchas_bp)
 app.register_blueprint(bloqueos_bp)
+
+@app.errorhandler(404)
+def recurso_no_encontrado(e):
+    cuerpo, status = armar_error("NOT_FOUND", "Recurso no encontrado", "El recurso solicitado no existe", 404)
+    return jsonify(cuerpo), status
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
