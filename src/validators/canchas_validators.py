@@ -2,6 +2,7 @@ import re
 from datetime import date
 
 PATRON_HORA_EN_PUNTO = re.compile(r'^([01]\d|2[0-3]):00:00$')
+CAMPOS_EDITABLES_PATCH = {"nombre", "precio_hora", "techada", "activa"}
 
 
 def validar_campos_actualizacion(datos):
@@ -63,7 +64,7 @@ def validar_disponibilidad(args):
         except (TypeError, ValueError):
             return "El parámetro 'id_deporte' debe ser un entero."
 
-    if "techada" in args and args["techada"] not in ("true", "false"):
+    if args.get("techada") is not None and args["techada"] not in ("true", "false"):
         return "El parámetro 'techada' debe ser 'true' o 'false'."
 
     return None

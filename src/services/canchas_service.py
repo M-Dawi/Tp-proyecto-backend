@@ -11,6 +11,7 @@ from src.repositories.canchas_repository import (
 from src.repositories.reservas_repository import contar_reservas
 from src.repositories.deportes_repository import obtener_deportes
 from src.validators import canchas_validators
+from src.services.errores import armar_error 
 
 
 def _armar_link(base_url, limit, offset, filtros):
@@ -25,20 +26,20 @@ def _armar_link(base_url, limit, offset, filtros):
 
 def listar_canchas(limit, offset, id_deporte=None, nombre=None, techada=None, activa=None, base_url=None):
     if limit < 1 or limit > 100:
-        return {"error": "El límite debe estar entre 1 y 100"}, 400
+        return armar_error("BAD_REQUEST", "Solicitud inválida", "El límite debe estar entre 1 y 100", 400)
     if offset < 0:
-        return {"error": "El offset no puede ser negativo"}, 400
+        return armar_error("BAD_REQUEST", "Solicitud inválida", "El offset no puede ser negativo", 400)
 
     techada_bool = None
     if techada is not None:
         if techada not in ("true", "false"):
-            return {"error": "El parámetro 'techada' debe ser 'true' o 'false'"}, 400
+            return armar_error("BAD_REQUEST", "Solicitud inválida", "El parámetro 'techada' debe ser 'true' o 'false'", 400)
         techada_bool = techada == "true"
 
     activa_bool = None
     if activa is not None:
         if activa not in ("true", "false"):
-            return {"error": "El parámetro 'activa' debe ser 'true' o 'false'"}, 400
+            return armar_error("BAD_REQUEST", "Solicitud inválida", "El parámetro 'activa' debe ser 'true' o 'false'", 400)
         activa_bool = activa == "true"
 
     canchas = obtener_canchas(
@@ -68,7 +69,7 @@ def listar_canchas(limit, offset, id_deporte=None, nombre=None, techada=None, ac
 
 def crear_canchas(datos):
     if isinstance(datos, dict):
-        return {"error": "No se proporcionaron datos para crear la cancha"}, 400
+        return armar_error("BAD_REQUEST", "Solicitud inválida", "No se proporcionaron datos para crear la cancha", 400)
 
     nombre = datos.get("nombre")
     id_deporte = datos.get("id_deporte")
@@ -77,64 +78,65 @@ def crear_canchas(datos):
     activa = datos.get("activa", True)
 
     if isinstance(nombre, str):
-        return {"error": "El nombre de la cancha es obligatorio"}, 400
+        return armar_error("BAD_REQUEST", "Solicitud inválida", "El nombre de la cancha es obligatorio", 400)
     try:
         id_deporte = int(id_deporte)
     except (TypeError, ValueError):
-        return {"error": "El 'id_deporte'debe ser un número entero"}, 400
+        return armar_error("BAD_REQUEST", "Solicitud inválida", "El 'id_deporte'debe ser un número entero", 400)
     if id_deporte is None:
-        return {"error": "El 'id_deporte' es obligatorio"}, 400
+        return armar_error("BAD_REQUEST", "Solicitud inválida", "El 'id_deporte' es obligatorio", 400)
     if precio_hora is None:
-        return {"error": "El 'precio_hora' es obligatorio"}, 400
+        return armar_error("BAD_REQUEST", "Solicitud inválida", "El 'precio_hora' es obligatorio", 400)
     if isinstance(precio_hora, bool) or not isinstance(precio_hora, (int, float)) or precio_hora <= 0:
-        return {"error": "El 'precio_hora' debe ser un entero mayor a cero"}, 400
+        return armar_error("BAD_REQUEST", "Solicitud inválida", "El 'precio_hora' debe ser un entero mayor a cero", 400)
 
     if not any(d["id"] == id_deporte for d in obtener_deportes()):
-        return {"error": "El deporte indicado no existe"}, 404
+        return armar_error("NOT_FOUND", "Recurso no encontrado", "El deporte indicado no existe", 404)
 
     cancha = crear_canchas_repo(id_deporte, nombre, precio_hora, techada, activa)
     if cancha is None:
-        return {"error": "No se pudo crear la cancha"}, 500
+        return armar_error("INTERNAL_SERVER_ERROR", "Error interno del servidor", "No se pudo crear la cancha",500)
     return cancha, 201
 
 
 def obtener_cancha(cancha_id):
     cancha = obtener_cancha_por_id(cancha_id)
     if cancha is None:
-        return {"error": "Cancha no encontrada"}, 404
+        return armar_error("NOT_FOUND", "Recurso no encontrado", "Cancha no encontrada", 404)
     return cancha, 200
 
 
 def actualizar_cancha(cancha_id, datos):
     cancha = obtener_cancha_por_id(cancha_id)
     if cancha is None:
-        return {"error": "Cancha no encontrada"}, 404
-    if not isisntance(datos, dict):
-        return {"error": "El cuerpo de la solicitud, debe ser un objeto JSON"}, 400
+        return armar_error("NOT_FOUND", "Recurso no encontrado", "Cancha no encontrada", 404)
+    if not isinstance(datos, dict):
+        return armar_error("BAD_REQUEST", "Solicitud inválida", "El cuerpo de la solicitud, debe ser un objeto JSON", 400)
 
     error = canchas_validators.validar_campos_actualizacion(datos)
     if error:
-        return {"error": error}, 400
+        return armar_error("BAD_REQUEST", "Solicitud inválida", error, 400)
 
     limpio = dict(datos)
     if "nombre" in limpio:
         if not isinstance(limpio["nombre"], str) or not limpio["nombre"].strip():
-            return {"error": "El nombre debe ser un texto no vacío"}, 400
+            return armar_error("BAD_REQUEST", "Solicitud inválida", "El nombre debe ser un texto no vacío", 400)
         limpio["nombre"] = limpio["nombre"].strip()
         
     resultado = repo_actualizar_cancha(cancha_id, limpio)
     
     if resultado is None:
-        return {"error": "No se pudo actualizar la cancha"}, 500
-    return resultado, 200
+        return armar_error("INTERNAL_SERVER_ERROR", "Error interno del servidor", "No se pudo actualizar la cancha",500)
+    return None, 204
+
 def eliminar_cancha(cancha_id):
     cancha = obtener_cancha_por_id(cancha_id)
     if cancha is None:
-        return {"error": "Cancha no encontrada"}, 404
+        return armar_error("NOT_FOUND", "Recurso no encontrado", "Cancha no encontrada", 404)
 
     total_reservas = contar_reservas(id_cancha=cancha_id)
     if total_reservas > 0:
-        return {"error": "No se puede eliminar una cancha con reservas asociadas"}, 409
+        return armar_error("CONFLICT", "Conflicto de negocio", "No se puede eliminar una cancha con reservas asociadas", 409)
 
     eliminar_cancha_repo(cancha_id)
     return None, 204
@@ -151,7 +153,7 @@ def listar_canchas_disponibles(fecha, hora_inicio, hora_fin,
         "techada": techada,
     })
     if error:
-        return {"error": error}, 400
+        return armar_error("BAD_REQUEST", "Solicitud inválida", error, 400)
 
     id_deporte_int = int(id_deporte) if id_deporte not in (None, "") else None
     techada_bool = (techada == "true") if techada in ("true", "false") else None
@@ -164,5 +166,8 @@ def listar_canchas_disponibles(fecha, hora_inicio, hora_fin,
         fecha=fecha, hora_inicio=hora_inicio, hora_fin=hora_fin,
         id_deporte=id_deporte_int, techada=techada_bool,
     )
+
+    if not canchas:
+        return "", 204
 
     return {"canchas": canchas, "limit": limit, "offset": offset, "total": total}, 200
