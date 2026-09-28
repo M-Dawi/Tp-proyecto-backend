@@ -1,4 +1,5 @@
 from db.db import get_db_connection
+from datetime import datetime
 
 def obtener_reserva_por_id(reserva_id):
     conexion = None
@@ -50,6 +51,13 @@ def crear_reserva(datos, precio_hora, precio_total):
     # Crea una reserva en la base de datos
     conexion = get_db_connection()
     cursor = conexion.cursor()
+
+    dt_inicio = datetime.fromisoformat(datos['fecha_hora_inicio'])
+    dt_fin = datetime.fromisoformat(datos['fecha_hora_fin'])
+
+    fecha = dt_inicio.strftime("%Y-%m-%d")
+    hora_inicio = dt_inicio.strftime("%H:%M:%S")
+    hora_fin = dt_fin.strftime("%H:%M:%S")
     
     query = """
         INSERT INTO reservas (id_cancha, id_socio, fecha_hora_inicio, fecha_hora_fin, precio_hora, precio_total, estado)
@@ -58,9 +66,9 @@ def crear_reserva(datos, precio_hora, precio_total):
     valores = (
         datos['id_cancha'],
         datos['id_socio'],
-        datos['fecha_hora_inicio'],
-        datos['fecha_hora_fin'],
-        precio_hora,
+        fecha,
+        hora_inicio,
+        hora_fin,
         precio_total,
         datos.get('estado', 'confirmada')
     )

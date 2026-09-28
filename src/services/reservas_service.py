@@ -232,7 +232,7 @@ def registrar_reservas_recurrentes(datos):
         return cuerpo, status
 
     reservas_creadas = []
-    precio_hora = int(cancha['precio_hora'])
+    precio_hora = float(cancha['precio_hora'])
     for inicio_i, fin_i in fechas_a_reservar:    
         horas = ((fin_i - inicio_i).total_seconds())/3600
         precio_total = int(precio_hora * horas)
